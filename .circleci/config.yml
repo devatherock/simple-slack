@@ -1,0 +1,70 @@
+go_lang_image: &go_lang_image
+  docker:
+    - image: circleci/golang:1.14
+work_directory: &work_directory
+  working_directory: ~/simple-slack
+
+version: 2.1
+jobs:
+  test:
+    <<: *go_lang_image
+    <<: *work_directory
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-pkg-cache
+      - run: go vet
+  build:
+    <<: *go_lang_image
+    environment:
+      CGO_ENABLED: 0
+      GOOS: Linux
+    <<: *work_directory
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-pkg-cache
+      - run: go build -o release/simpleslack
+      - save_cache:
+          paths:
+            - "/go/pkg"
+          key: v1-pkg-cache
+      - persist_to_workspace:
+          root: ~/simple-slack
+          paths:
+            - release
+  publish:
+    docker:
+      - image: docker:19.03.6
+    <<: *work_directory
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/simple-slack
+      - run: |
+          TAG=0.0.1
+          docker build -t devatherock/simple-slack:$TAG -t devatherock/simple-slack:latest .
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push devatherock/simple-slack:$TAG
+          docker push devatherock/simple-slack:latest
+
+workflows:
+  version: 2
+  build_publish:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+      - publish:
+          requires:
+            - build
+  pr_check:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: master
