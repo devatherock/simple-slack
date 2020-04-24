@@ -45,7 +45,7 @@ jobs:
       - attach_workspace:
           at: ~/simple-slack
       - run: |
-          TAG=0.0.1
+          TAG=0.1.0
           docker build -t devatherock/simple-slack:$TAG -t devatherock/simple-slack:latest .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/simple-slack:$TAG
