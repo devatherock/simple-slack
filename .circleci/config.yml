@@ -16,8 +16,7 @@ jobs:
             - v1-pkg-cache
       - run: go vet
   build:
-    docker:
-      - image: circleci/golang:1.14
+    <<: *go_lang_image
     environment:
       CGO_ENABLED: 0
       GOOS: Linux
