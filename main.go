@@ -16,6 +16,8 @@ import (
 // Presorted for contains check to work
 var secretEnvVariables = []string{"PLUGIN_WEBHOOK", "SLACK_WEBHOOK", "WEBHOOK"}
 
+const defaultColor string = "#cfd3d7" // grey
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "simple slack plugin"
@@ -26,7 +28,6 @@ func main() {
 			Name:   "color, c",
 			Usage:  "Color in which the message block will be highlighted",
 			EnvVar: "COLOR,PLUGIN_COLOR,PARAMETER_COLOR",
-			Value:  "#cfd3d7",
 		},
 		cli.StringFlag{
 			Name:   "text, t",
@@ -60,7 +61,7 @@ func validate(context *cli.Context) error {
 func run(context *cli.Context) {
 	attachments := [1]map[string]string{
 		{
-			"color": context.String("color"),
+			"color": getHighlightColor(context.String("color")),
 			"text":  parseTemplate(context.String("text")),
 		},
 	}
@@ -82,6 +83,28 @@ func run(context *cli.Context) {
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
+}
+
+// Decides the highlight color based on build status
+func getHighlightColor(inputColor string) (outputColor string) {
+	if inputColor != "" {
+		outputColor = inputColor
+	} else if os.Getenv("DRONE") == "true" {
+		buildStatus := os.Getenv("DRONE_BUILD_STATUS")
+
+		switch buildStatus {
+		case "success":
+			outputColor = "#33ad7f" // green
+		case "failure", "error", "killed":
+			outputColor = "#a1040c" // red
+		default:
+			outputColor = defaultColor
+		}
+	} else {
+		outputColor = defaultColor
+	}
+
+	return
 }
 
 // Processes the input text as a template with environment variables as the
