@@ -4,3 +4,18 @@
 # simple-slack
 CI plugin to post messages to slack. For a listing of available options and  usage
 samples, please take a look at the [docs](DOCS.md).
+
+## Usage
+
+Execute from the working directory:
+
+```
+docker run --rm \
+  -e SLACK_WEBHOOK=https://hooks.slack.com/services/... \
+  -e PARAMETER_COLOR=#33ad7f \
+  -e PARAMETER_TEXT="Success: {{.BuildLink}} ({{.BuildRef}}) by {{.BuildAuthor}}" \
+  -e BUILD_REF="refs/heads/master" \
+  -e BUILD_AUTHOR=octocat \
+  -e BUILD_LINK=http://github.com/octocat/hello-world \
+  devatherock/simple-slack:latest
+```
