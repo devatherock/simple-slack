@@ -1,6 +1,7 @@
 [![CircleCI](https://circleci.com/gh/devatherock/simple-slack.svg?style=svg)](https://circleci.com/gh/devatherock/simple-slack)
 [![Docker Pulls](https://img.shields.io/docker/pulls/devatherock/simple-slack.svg)](https://hub.docker.com/r/devatherock/simple-slack/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Microbadger](https://images.microbadger.com/badges/image/devatherock/simple-slack.svg)](https://microbadger.com/images/devatherock/simple-slack)
 # simple-slack
 CI plugin to post messages to slack. For a listing of available options and  usage
 samples, please take a look at the [docs](DOCS.md).
