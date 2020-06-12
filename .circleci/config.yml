@@ -45,11 +45,25 @@ jobs:
       - attach_workspace:
           at: ~/simple-slack
       - run: |
-          TAG=0.2.0
+          TAG=0.3.0
           docker build -t devatherock/simple-slack:$TAG -t devatherock/simple-slack:latest .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/simple-slack:$TAG
           docker push devatherock/simple-slack:latest
+  notify:
+    docker:
+      - image: devatherock/simple-slack:0.3.0
+    environment:
+      PARAMETER_TEXT: "{{.CircleBuildUrl}} ({{.CircleSha1}}) by {{.CircleUsername}}"
+    steps:
+      - run:
+          name: Success notification
+          command: /bin/simpleslack -c "#33ad7f"
+          when: on_success
+      - run:
+          name: Failure notification
+          command: /bin/simpleslack -c "#a1040c"
+          when: on_fail
 
 workflows:
   version: 2
@@ -62,6 +76,9 @@ workflows:
       - publish:
           requires:
             - build
+      - notify:
+          requires:
+            - publish
   pr_check:
     jobs:
       - test:

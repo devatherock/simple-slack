@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // Presorted for contains check to work
@@ -24,20 +24,23 @@ func main() {
 	app.Before = validate
 	app.Action = run
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:   "color, c",
+		&cli.StringFlag{
+			Name:   "color",
+			Aliases: []string{"c"},
 			Usage:  "Color in which the message block will be highlighted",
-			EnvVar: "COLOR,PLUGIN_COLOR,PARAMETER_COLOR",
+			EnvVars: []string{"COLOR","PLUGIN_COLOR","PARAMETER_COLOR"},
 		},
-		cli.StringFlag{
-			Name:   "text, t",
+		&cli.StringFlag{
+			Name:   "text",
+			Aliases: []string{"t"},
 			Usage:  "The message content",
-			EnvVar: "TEXT,PLUGIN_TEXT,PARAMETER_TEXT",
+			EnvVars: []string{"TEXT","PLUGIN_TEXT","PARAMETER_TEXT"},
 		},
-		cli.StringFlag{
-			Name:   "webhook, u",
+		&cli.StringFlag{
+			Name:   "webhook",
+			Aliases: []string{"u"},
 			Usage:  "The slack webhook URL",
-			EnvVar: "WEBHOOK,PLUGIN_WEBHOOK,SLACK_WEBHOOK",
+			EnvVars: []string{"WEBHOOK","PLUGIN_WEBHOOK","SLACK_WEBHOOK"},
 		},
 	}
 
@@ -58,7 +61,7 @@ func validate(context *cli.Context) error {
 }
 
 // Sends the input text to slack
-func run(context *cli.Context) {
+func run(context *cli.Context) error {
 	attachments := [1]map[string]string{
 		{
 			"color": getHighlightColor(context.String("color")),
@@ -72,7 +75,7 @@ func run(context *cli.Context) {
 	data, _ := json.Marshal(payload)
 	req, err := http.NewRequest("POST", context.String("webhook"), bytes.NewBuffer(data))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -80,9 +83,12 @@ func run(context *cli.Context) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer res.Body.Close()
+	log.Println("Message posted to webhook with http status: ", res.StatusCode)
+
+	return nil
 }
 
 // Decides the highlight color based on build status
