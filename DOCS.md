@@ -22,7 +22,7 @@ pipeline:
     when:
       event: [ push ]
       status: [ success, failure, error ]
-    image: devatherock/simple-slack:0.3.0
+    image: devatherock/simple-slack:0.4.0
     secrets: [ slack_webhook ]
     color: "#33ad7f"
     text: |-
@@ -38,11 +38,11 @@ steps:
     ruleset:
       event: [ push ]
       status: [ success ]
-    image: devatherock/simple-slack:0.3.0
+    image: devatherock/simple-slack:0.4.0
     secrets: [ slack_webhook ]
     parameters:
       color: "#33ad7f"
       text: |-
         Success: {{.BuildLink}} ({{.BuildRef}}) by {{.BuildAuthor}}
         {{.BuildMessage}}
-```  
+```

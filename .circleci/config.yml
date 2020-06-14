@@ -1,13 +1,22 @@
 go_lang_image: &go_lang_image
   docker:
     - image: circleci/golang:1.14
+
+slack_image: &slack_image
+  docker:
+    - image: devatherock/simple-slack:0.4.0
+
 work_directory: &work_directory
   working_directory: ~/simple-slack
+
+resource_class: &resource_class
+  resource_class: small
 
 version: 2.1
 jobs:
   test:
     <<: *go_lang_image
+    <<: *resource_class
     <<: *work_directory
     steps:
       - checkout
@@ -17,6 +26,7 @@ jobs:
       - run: go vet
   build:
     <<: *go_lang_image
+    <<: *resource_class
     environment:
       CGO_ENABLED: 0
       GOOS: linux
@@ -38,6 +48,7 @@ jobs:
   publish:
     docker:
       - image: docker:19.03.6
+    <<: *resource_class
     <<: *work_directory
     steps:
       - checkout
@@ -45,28 +56,32 @@ jobs:
       - attach_workspace:
           at: ~/simple-slack
       - run: |
-          TAG=0.3.0
+          TAG=0.4.0
           docker build -t devatherock/simple-slack:$TAG -t devatherock/simple-slack:latest .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/simple-slack:$TAG
           docker push devatherock/simple-slack:latest
-  notify:
-    docker:
-      - image: devatherock/simple-slack:0.3.0
+
+  notify_success:
+    <<: *slack_image
+    <<: *resource_class
     environment:
-      PARAMETER_TEXT: "{{.CircleBuildUrl}} ({{.CircleSha1}}) by {{.CircleUsername}}"
+      TEXT: "Success: {{.CircleBuildUrl}} by {{.CircleUsername}}"
     steps:
-      - run:
-          name: Success notification
-          command: /bin/simpleslack -c "#33ad7f"
-          when: on_success
+      - run: /bin/simpleslack -c "#33ad7f"
+  notify_failure:
+    <<: *slack_image
+    <<: *resource_class
+    environment:
+      TEXT: "Failure: {{.CircleBuildUrl}} by {{.CircleUsername}}"
+    steps:
       - run:
           name: Failure notification
           command: /bin/simpleslack -c "#a1040c"
           when: on_fail
 
 workflows:
-  version: 2
+  version: 2.1
   build_publish:
     jobs:
       - build:
@@ -76,7 +91,10 @@ workflows:
       - publish:
           requires:
             - build
-      - notify:
+      - notify_success:
+          requires:
+            - publish
+      - notify_failure:
           requires:
             - publish
   pr_check:

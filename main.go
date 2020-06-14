@@ -37,6 +37,18 @@ func main() {
 			EnvVars: []string{"TEXT","PLUGIN_TEXT","PARAMETER_TEXT"},
 		},
 		&cli.StringFlag{
+			Name:   "title",
+			Aliases: []string{"ti"},
+			Usage:  "The message title",
+			EnvVars: []string{"TITLE","PLUGIN_TITLE","PARAMETER_TITLE"},
+		},
+		&cli.StringFlag{
+			Name:   "channel",
+			Aliases: []string{"ch"},
+			Usage:  "The slack channel name",
+			EnvVars: []string{"CHANNEL","PLUGIN_CHANNEL","PARAMETER_CHANNEL"},
+		},
+		&cli.StringFlag{
 			Name:   "webhook",
 			Aliases: []string{"u"},
 			Usage:  "The slack webhook URL",
@@ -62,14 +74,28 @@ func validate(context *cli.Context) error {
 
 // Sends the input text to slack
 func run(context *cli.Context) error {
+	// Build attachments section
+	text := parseTemplate(context.String("text"))
 	attachments := [1]map[string]string{
 		{
 			"color": getHighlightColor(context.String("color")),
-			"text":  parseTemplate(context.String("text")),
+			"text": text,
 		},
 	}
-	payload := map[string][1]map[string]string{
+
+	title := context.String("title")
+	if title != "" {
+		attachments[0]["title"] = title
+	}
+
+	// Build complete payload
+	payload := map[string]interface{}{
 		"attachments": attachments,
+	}
+
+	channel := context.String("channel")
+	if channel != "" {
+		payload["channel"] = channel
 	}
 
 	data, _ := json.Marshal(payload)
@@ -86,7 +112,7 @@ func run(context *cli.Context) error {
 		return err
 	}
 	defer res.Body.Close()
-	log.Println("Message posted to webhook with http status: ", res.StatusCode)
+	log.Println("Message posted to webhook with http status", res.StatusCode)
 
 	return nil
 }

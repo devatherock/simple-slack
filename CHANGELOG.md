@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2020-06-13
+### Added
+- Some additional fields to the outgoing webhook payload. This is to support Zulip messaging.
+
 ## [0.3.0] - 2020-06-12
 ### Added
 - A log statement on successful completion
