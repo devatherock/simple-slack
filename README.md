@@ -4,7 +4,7 @@
 [![Docker Image Layers](https://img.shields.io/microbadger/layers/devatherock/simple-slack.svg)](https://microbadger.com/images/devatherock/simple-slack)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # simple-slack
-CI plugin to post messages to slack. For a listing of available options and  usage
+CI plugin to post messages to [Slack](https://slack.com/) or other chat clients with Slack compatible incoming webhooks like [Rocket.Chat](https://rocket.chat/). For a listing of available options and  usage
 samples, please take a look at the [docs](DOCS.md).
 
 ## Usage
