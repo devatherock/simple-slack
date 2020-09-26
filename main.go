@@ -25,34 +25,34 @@ func main() {
 	app.Action = run
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
-			Name:   "color",
+			Name:    "color",
 			Aliases: []string{"c"},
-			Usage:  "Color in which the message block will be highlighted",
-			EnvVars: []string{"COLOR","PLUGIN_COLOR","PARAMETER_COLOR"},
+			Usage:   "Color in which the message block will be highlighted",
+			EnvVars: []string{"COLOR", "PLUGIN_COLOR", "PARAMETER_COLOR"},
 		},
 		&cli.StringFlag{
-			Name:   "text",
+			Name:    "text",
 			Aliases: []string{"t"},
-			Usage:  "The message content",
-			EnvVars: []string{"TEXT","PLUGIN_TEXT","PARAMETER_TEXT"},
+			Usage:   "The message content",
+			EnvVars: []string{"TEXT", "PLUGIN_TEXT", "PARAMETER_TEXT"},
 		},
 		&cli.StringFlag{
-			Name:   "title",
+			Name:    "title",
 			Aliases: []string{"ti"},
-			Usage:  "The message title",
-			EnvVars: []string{"TITLE","PLUGIN_TITLE","PARAMETER_TITLE"},
+			Usage:   "The message title",
+			EnvVars: []string{"TITLE", "PLUGIN_TITLE", "PARAMETER_TITLE"},
 		},
 		&cli.StringFlag{
-			Name:   "channel",
+			Name:    "channel",
 			Aliases: []string{"ch"},
-			Usage:  "The slack channel name",
-			EnvVars: []string{"CHANNEL","PLUGIN_CHANNEL","PARAMETER_CHANNEL"},
+			Usage:   "The slack channel name",
+			EnvVars: []string{"CHANNEL", "PLUGIN_CHANNEL", "PARAMETER_CHANNEL"},
 		},
 		&cli.StringFlag{
-			Name:   "webhook",
+			Name:    "webhook",
 			Aliases: []string{"u"},
-			Usage:  "The slack webhook URL",
-			EnvVars: []string{"WEBHOOK","PLUGIN_WEBHOOK","SLACK_WEBHOOK"},
+			Usage:   "The slack webhook URL",
+			EnvVars: []string{"WEBHOOK", "PLUGIN_WEBHOOK", "SLACK_WEBHOOK"},
 		},
 	}
 
@@ -79,7 +79,7 @@ func run(context *cli.Context) error {
 	attachments := [1]map[string]string{
 		{
 			"color": getHighlightColor(context.String("color")),
-			"text": text,
+			"text":  text,
 		},
 	}
 
