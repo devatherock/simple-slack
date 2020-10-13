@@ -64,19 +64,6 @@ jobs:
           root: ~/simple-slack
           paths:
             - release
-  publish:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/simple-slack
-      - docker/build:
-          image: devatherock/simple-slack
-          tag: "0.4.0,latest"
-      - docker/push:
-          image: devatherock/simple-slack
-          tag: "0.4.0,latest"
 
   notify_success:
     <<: *slack_image
@@ -106,23 +93,27 @@ workflows:
           filters:
             branches:
               only: master
-      - publish:
+      - docker/publish:
           context:
             - docker-credentials
           requires:
             - build
+          image: devatherock/simple-slack  
+          attach-at: ~/simple-slack
+          tag: "0.4.0,latest"
+          use-remote-docker: true
       - notify_success:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - publish
+            - docker/publish
       - notify_failure:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - publish
+            - docker/publish
   pr_check:
     jobs:
       - test:
