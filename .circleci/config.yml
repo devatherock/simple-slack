@@ -75,10 +75,10 @@ jobs:
           at: ~/simple-slack
       - docker/build:
           image: devatherock/simple-slack
-          tag: "$TAG,latest"
+          tag: "${TAG},latest"
       - docker/push:
           image: devatherock/simple-slack
-          tag: "$TAG,latest"
+          tag: "${TAG},latest"
 
   notify_success:
     <<: *slack_image
