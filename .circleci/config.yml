@@ -103,6 +103,7 @@ workflows:
           attach-at: ~/simple-slack
           tag: "0.4.0,latest"
           use-remote-docker: true
+          docker-username: DOCKER_USERNAME
       - notify_success:
           context:
             - docker-credentials
