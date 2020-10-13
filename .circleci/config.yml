@@ -23,11 +23,7 @@ resource_class: &resource_class
   
 executors:
   docker-executor:
-    docker:
-      - image: docker:19.03.6
-        auth:
-          username: $DOCKER_USERNAME
-          password: $DOCKER_PASSWORD
+    <<: *go_lang_image
     <<: *resource_class
     <<: *work_directory  
 
