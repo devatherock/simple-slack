@@ -94,6 +94,7 @@ workflows:
             branches:
               only: master
       - docker/publish:
+          executor: docker-executor
           context:
             - docker-credentials
           requires:
