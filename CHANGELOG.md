@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+### Added
+-   make file
+-   First unit test
+-   Code coverage using coveralls
+
 ## [0.4.0] - 2020-06-13
 ### Added
 - Some additional fields to the outgoing webhook payload. This is to support Zulip messaging.

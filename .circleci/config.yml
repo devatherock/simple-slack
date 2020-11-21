@@ -7,7 +7,7 @@ go_lang_image: &go_lang_image
 
 slack_image: &slack_image
   docker:
-    - image: devatherock/simple-slack:0.4.0
+    - image: devatherock/simple-slack:latest
       auth:
         username: $DOCKER_USERNAME
         password: $DOCKER_PASSWORD
@@ -30,28 +30,26 @@ executors:
 version: 2.1
 jobs:
   test:
-    <<: *go_lang_image
-    <<: *resource_class
-    <<: *work_directory
+    executor: docker-executor
     steps:
       - checkout
       - restore_cache:
           keys:
             - v1-pkg-cache
-      - run: go vet
+      - run: make check
   build:
-    <<: *go_lang_image
-    <<: *resource_class
+    executor: docker-executor
     environment:
       CGO_ENABLED: 0
       GOOS: linux
-    <<: *work_directory
     steps:
       - checkout
       - restore_cache:
           keys:
             - v1-pkg-cache
-      - run: go build -o release/simpleslack
+      - run: |
+          make coveralls
+          make build
       - save_cache:
           paths:
             - "/go/pkg"
@@ -61,23 +59,30 @@ jobs:
           paths:
             - release
 
+  publish_release:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/simple-slack
+      - run: |
+          TAG=${CIRCLE_TAG#v}
+          DEV_TAG=${CIRCLE_SHA1:0:8}
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker pull devatherock/simple-slack:$DEV_TAG
+          docker tag devatherock/simple-slack:$DEV_TAG devatherock/simple-slack:$TAG
+          docker push devatherock/simple-slack:$TAG
+
   notify_success:
     <<: *slack_image
     <<: *resource_class
     environment:
       TEXT: "Success: {{.CircleBuildUrl}} by {{.CircleUsername}}"
+      CHANNEL: general
+      TITLE: "Build completed"
     steps:
       - run: /bin/simpleslack -c "#33ad7f"
-  notify_failure:
-    <<: *slack_image
-    <<: *resource_class
-    environment:
-      TEXT: "Failure: {{.CircleBuildUrl}} by {{.CircleUsername}}"
-    steps:
-      - run:
-          name: Failure notification
-          command: /bin/simpleslack -c "#a1040c"
-          when: on_fail
 
 workflows:
   version: 2.1
@@ -90,6 +95,7 @@ workflows:
             branches:
               only: master
       - docker/publish:
+          name: publish
           executor: docker-executor
           context:
             - docker-credentials
@@ -97,7 +103,7 @@ workflows:
             - build
           image: devatherock/simple-slack  
           attach-at: ~/simple-slack
-          tag: "0.4.0,latest"
+          tag: "${CIRCLE_SHA1:0:8},latest"
           use-remote-docker: true
           docker-username: DOCKER_USERNAME
       - notify_success:
@@ -105,13 +111,23 @@ workflows:
             - docker-credentials
             - slack-webhook
           requires:
-            - docker/publish
-      - notify_failure:
+            - publish
+  release:
+    jobs:
+      - publish_release:
+          context:
+            - docker-credentials
+          filters:
+            branches:
+              only: non-existent-branch
+            tags:
+              only: /^v[0-9\.]+$/
+      - notify_success:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - docker/publish
+            - publish_release
   pr_check:
     jobs:
       - test:
