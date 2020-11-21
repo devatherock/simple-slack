@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -65,8 +66,7 @@ func main() {
 // Validates the input parameters
 func validate(context *cli.Context) error {
 	if context.String("text") == "" || context.String("webhook") == "" {
-		cli.ShowAppHelp(context)
-		os.Exit(1)
+		return errors.New("Required parameters not specified")
 	}
 
 	return nil
