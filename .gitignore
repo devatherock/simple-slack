@@ -1,3 +1,5 @@
 release/
 .project
 *.iml
+coverage.out
+coverage.html
