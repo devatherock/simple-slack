@@ -6,6 +6,7 @@ slack_image: &slack_image
         password: $DOCKER_PASSWORD
     
 orbs:
+  sonarcloud: sonarsource/sonarcloud@1.0.2
   docker: circleci/docker@1.5.0
 
 work_directory: &work_directory
@@ -30,6 +31,7 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
+      - sonarcloud/scan
       - restore_cache:
           keys:
             - v1-pkg-cache
@@ -88,6 +90,7 @@ workflows:
       - build:
           context:
             - docker-credentials
+            - sonar-credentials
           filters:
             branches:
               only: master
@@ -130,6 +133,7 @@ workflows:
       - test:
           context:
             - docker-credentials
+            - sonar-credentials
           filters:
             branches:
               ignore: master
