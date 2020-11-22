@@ -37,6 +37,7 @@ jobs:
       - run: make check
       - run: |
           echo "export SONAR_PR_KEY=$(echo ${CIRCLE_PULL_REQUEST} | cut -d'/' -f 7)" >> $BASH_ENV
+          echo "export SONAR_PR_BRANCH=${CIRCLE_BRANCH}" >> $BASH_ENV
       - sonarcloud/scan
   build:
     executor: docker-executor
