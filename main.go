@@ -30,41 +30,51 @@ func runApp(args []string) {
 	app.Before = validate
 	app.Action = run
 	app.Flags = []cli.Flag{
-		&cli.StringFlag{
-			Name:    "color",
-			Aliases: []string{"c"},
-			Usage:   "Color in which the message block will be highlighted",
-			EnvVars: []string{"COLOR", "PLUGIN_COLOR", "PARAMETER_COLOR"},
-		},
-		&cli.StringFlag{
-			Name:    "text",
-			Aliases: []string{"t"},
-			Usage:   "The message content",
-			EnvVars: []string{"TEXT", "PLUGIN_TEXT", "PARAMETER_TEXT"},
-		},
-		&cli.StringFlag{
-			Name:    "title",
-			Aliases: []string{"ti"},
-			Usage:   "The message title",
-			EnvVars: []string{"TITLE", "PLUGIN_TITLE", "PARAMETER_TITLE"},
-		},
-		&cli.StringFlag{
-			Name:    "channel",
-			Aliases: []string{"ch"},
-			Usage:   "The slack channel name",
-			EnvVars: []string{"CHANNEL", "PLUGIN_CHANNEL", "PARAMETER_CHANNEL"},
-		},
-		&cli.StringFlag{
-			Name:    "webhook",
-			Aliases: []string{"u"},
-			Usage:   "The slack webhook URL",
-			EnvVars: []string{"WEBHOOK", "PLUGIN_WEBHOOK", "SLACK_WEBHOOK"},
-		},
+		createStringCliFlag(
+			"color",
+			[]string{"c"},
+			"Color in which the message block will be highlighted",
+			[]string{"COLOR", "PLUGIN_COLOR", "PARAMETER_COLOR"},
+		),
+		createStringCliFlag(
+			"text",
+			[]string{"t"},
+			"The message content",
+			[]string{"TEXT", "PLUGIN_TEXT", "PARAMETER_TEXT"},
+		),
+		createStringCliFlag(
+			"title",
+			[]string{"ti"},
+			"The message title",
+			[]string{"TITLE", "PLUGIN_TITLE", "PARAMETER_TITLE"},
+		),
+		createStringCliFlag(
+			"channel",
+			[]string{"ch"},
+			"The slack channel name",
+			[]string{"CHANNEL", "PLUGIN_CHANNEL", "PARAMETER_CHANNEL"},
+		),
+		createStringCliFlag(
+			"webhook",
+			[]string{"u"},
+			"The slack webhook URL",
+			[]string{"WEBHOOK", "PLUGIN_WEBHOOK", "SLACK_WEBHOOK"},
+		),
 	}
 
 	err := app.Run(args)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+// Creates a String CLI parameter
+func createStringCliFlag(name string, aliases []string, usage string, envVars []string) *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:    name,
+		Aliases: aliases,
+		Usage:   usage,
+		EnvVars: envVars,
 	}
 }
 
