@@ -1,10 +1,10 @@
 [![CircleCI](https://circleci.com/gh/devatherock/simple-slack.svg?style=svg)](https://circleci.com/gh/devatherock/simple-slack)
 [![Version](https://img.shields.io/docker/v/devatherock/simple-slack?sort=semver)](https://hub.docker.com/r/devatherock/simple-slack/)
 [![Coverage Status](https://coveralls.io/repos/github/devatherock/simple-slack/badge.svg?branch=master)](https://coveralls.io/github/devatherock/simple-slack?branch=master)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=simple-slack&metric=alert_status)](https://sonarcloud.io/component_measures?id=simple-slack&metric=alert_status&view=list)
 [![Docker Pulls](https://img.shields.io/docker/pulls/devatherock/simple-slack.svg)](https://hub.docker.com/r/devatherock/simple-slack/)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=simple-slack&metric=ncloc)](https://sonarcloud.io/component_measures?id=simple-slack&metric=ncloc)
 [![Docker Image Size](https://img.shields.io/docker/image-size/devatherock/simple-slack.svg?sort=date)](https://hub.docker.com/r/devatherock/simple-slack/)
-[![Docker Image Layers](https://img.shields.io/microbadger/layers/devatherock/simple-slack.svg)](https://microbadger.com/images/devatherock/simple-slack)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # simple-slack
 CI plugin to post messages to [Slack](https://slack.com/) or other chat clients with Slack compatible incoming webhooks like [Rocket.Chat](https://rocket.chat/). For a listing of available options and  usage
 samples, please take a look at the [docs](DOCS.md).

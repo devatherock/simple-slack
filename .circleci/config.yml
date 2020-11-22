@@ -1,10 +1,3 @@
-go_lang_image: &go_lang_image
-  docker:
-    - image: circleci/golang:1.14
-      auth:
-        username: $DOCKER_USERNAME
-        password: $DOCKER_PASSWORD
-
 slack_image: &slack_image
   docker:
     - image: devatherock/simple-slack:latest
@@ -23,7 +16,11 @@ resource_class: &resource_class
   
 executors:
   docker-executor:
-    <<: *go_lang_image
+    docker:
+    - image: circleci/golang:1.14
+      auth:
+        username: $DOCKER_USERNAME
+        password: $DOCKER_PASSWORD
     <<: *resource_class
     <<: *work_directory  
 
@@ -131,6 +128,8 @@ workflows:
   pr_check:
     jobs:
       - test:
+          context:
+            - docker-credentials
           filters:
             branches:
               ignore: master
