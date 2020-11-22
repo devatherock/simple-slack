@@ -20,6 +20,11 @@ var secretEnvVariables = []string{"PLUGIN_WEBHOOK", "SLACK_WEBHOOK", "WEBHOOK"}
 const defaultColor string = "#cfd3d7" // grey
 
 func main() {
+	runApp(os.Args)
+}
+
+// Initializes and runs the app
+func runApp(args []string) {
 	app := cli.NewApp()
 	app.Name = "simple slack plugin"
 	app.Before = validate
@@ -57,7 +62,7 @@ func main() {
 		},
 	}
 
-	err := app.Run(os.Args)
+	err := app.Run(args)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,30 +79,7 @@ func validate(context *cli.Context) error {
 
 // Sends the input text to slack
 func run(context *cli.Context) error {
-	// Build attachments section
-	text := parseTemplate(context.String("text"))
-	attachments := [1]map[string]string{
-		{
-			"color": getHighlightColor(context.String("color")),
-			"text":  text,
-		},
-	}
-
-	title := context.String("title")
-	if title != "" {
-		attachments[0]["title"] = title
-	}
-
-	// Build complete payload
-	payload := map[string]interface{}{
-		"attachments": attachments,
-	}
-
-	channel := context.String("channel")
-	if channel != "" {
-		payload["channel"] = channel
-	}
-
+	payload := buildPayload(context)
 	data, _ := json.Marshal(payload)
 	req, err := http.NewRequest("POST", context.String("webhook"), bytes.NewBuffer(data))
 	if err != nil {
@@ -115,6 +97,35 @@ func run(context *cli.Context) error {
 	log.Println("Message posted to webhook with http status", res.StatusCode)
 
 	return nil
+}
+
+// Builds the Slack HTTP request payload
+func buildPayload(context *cli.Context) (payload map[string]interface{}) {
+	// Build attachments section
+	text := parseTemplate(context.String("text"))
+	attachments := [1]map[string]string{
+		{
+			"color": getHighlightColor(context.String("color")),
+			"text":  text,
+		},
+	}
+
+	title := context.String("title")
+	if title != "" {
+		attachments[0]["title"] = title
+	}
+
+	// Build complete payload
+	payload = map[string]interface{}{
+		"attachments": attachments,
+	}
+
+	channel := context.String("channel")
+	if channel != "" {
+		payload["channel"] = channel
+	}
+
+	return
 }
 
 // Decides the highlight color based on build status
