@@ -1,10 +1,3 @@
-go_lang_image: &go_lang_image
-  docker:
-    - image: circleci/golang:1.14
-      auth:
-        username: $DOCKER_USERNAME
-        password: $DOCKER_PASSWORD
-
 slack_image: &slack_image
   docker:
     - image: devatherock/simple-slack:latest
@@ -13,6 +6,7 @@ slack_image: &slack_image
         password: $DOCKER_PASSWORD
     
 orbs:
+  sonarcloud: sonarsource/sonarcloud@1.0.2
   docker: circleci/docker@1.5.0
 
 work_directory: &work_directory
@@ -23,7 +17,11 @@ resource_class: &resource_class
   
 executors:
   docker-executor:
-    <<: *go_lang_image
+    docker:
+    - image: circleci/golang:1.14
+      auth:
+        username: $DOCKER_USERNAME
+        password: $DOCKER_PASSWORD
     <<: *resource_class
     <<: *work_directory  
 
@@ -33,6 +31,7 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
+      - sonarcloud/scan
       - restore_cache:
           keys:
             - v1-pkg-cache
@@ -91,6 +90,7 @@ workflows:
       - build:
           context:
             - docker-credentials
+            - sonar-credentials
           filters:
             branches:
               only: master
@@ -131,6 +131,9 @@ workflows:
   pr_check:
     jobs:
       - test:
+          context:
+            - docker-credentials
+            - sonar-credentials
           filters:
             branches:
               ignore: master
