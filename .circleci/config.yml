@@ -27,10 +27,6 @@ executors:
 
 version: 2.1
 jobs:
-  parameters:
-    repo_name:
-      type: string
-      default: simple-slack
   test:
     executor: docker-executor
     steps:
@@ -60,7 +56,7 @@ jobs:
             - "/go/pkg"
           key: v1-pkg-cache
       - persist_to_workspace:
-          root: ~/<< parameters.repo_name >>
+          root: ~/simple-slack
           paths:
             - release
 
@@ -70,7 +66,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - attach_workspace:
-          at: ~/<< parameters.repo_name >>
+          at: ~/simple-slack
       - run: |
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}
