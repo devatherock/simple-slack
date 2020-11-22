@@ -1,10 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,16 +22,50 @@ func setEnvironmentVariable(test *testing.T, variable string, value string) {
 	})
 }
 
+func TestRunApp(test *testing.T) {
+	setEnvironmentVariable(test, "TEXT", "Build failed!")
+
+	// Test HTTP server
+	var capturedRequest []byte
+	testServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		capturedRequest, _ = ioutil.ReadAll(request.Body)
+		writer.WriteHeader(400)
+	}))
+	defer testServer.Close()
+	setEnvironmentVariable(test, "WEBHOOK", testServer.URL)
+
+	runApp([]string{"-x", "dummy"})
+
+	// Verify request
+	jsonRequest := make(map[string]interface{})
+	json.Unmarshal(capturedRequest, &jsonRequest)
+	assert.Equal(test, 1, len(jsonRequest))
+
+	var attachments []interface{}
+	attachments = jsonRequest["attachments"].([]interface{})
+	var attachment map[string]interface{}
+	attachment = attachments[0].(map[string]interface{})
+
+	assert.Equal(test, 1, len(attachments))
+	assert.Equal(test, 2, len(attachment))
+	assert.Equal(test, "Build failed!", attachment["text"])
+	assert.Equal(test, "#cfd3d7", attachment["color"])
+}
+
 func TestValidateError(test *testing.T) {
 	cases := []struct {
 		parameters map[string]string
 	}{
-		{map[string]string{
-			"text": "hello",
-		}},
-		{map[string]string{
-			"webhook": "https://secreturl",
-		}},
+		{
+			map[string]string{
+				"text": "hello",
+			},
+		},
+		{
+			map[string]string{
+				"webhook": "https://secreturl",
+			},
+		},
 	}
 	expected := "Required parameters not specified"
 
@@ -37,10 +77,8 @@ func TestValidateError(test *testing.T) {
 
 		context := cli.NewContext(nil, set, nil)
 		actual := validate(context)
-		if actual.Error() != expected {
-			test.Logf("Expected: %s, Actual: %s", expected, actual)
-			test.Fail()
-		}
+
+		assert.Equal(test, expected, actual.Error())
 	}
 }
 
@@ -49,11 +87,101 @@ func TestValidateSuccess(test *testing.T) {
 	set.String("text", "hello", "dummy")
 	set.String("webhook", "https://secreturl", "dummy")
 
-	context := cli.NewContext(cli.NewApp(), set, nil)
+	context := cli.NewContext(nil, set, nil)
 	actual := validate(context)
-	if actual != nil {
-		test.Logf("Expected: nil, Actual: %s", actual)
-		test.Fail()
+
+	assert.Nil(test, actual)
+}
+
+func TestRun(test *testing.T) {
+	// Test HTTP server
+	var capturedRequest []byte
+	testServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		capturedRequest, _ = ioutil.ReadAll(request.Body)
+		writer.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(writer, `{"success":true}`)
+	}))
+	defer testServer.Close()
+
+	set := flag.NewFlagSet("test", 0)
+	set.String("text", "Build failed!", "")
+	set.String("color", "red", "")
+	set.String("title", "Build notification", "")
+	set.String("channel", "general", "")
+	set.String("webhook", testServer.URL, "")
+
+	context := cli.NewContext(nil, set, nil)
+	actual := run(context)
+
+	// Verify no error
+	assert.Nil(test, actual)
+
+	// Verify request
+	jsonRequest := make(map[string]interface{})
+	json.Unmarshal(capturedRequest, &jsonRequest)
+	assert.Equal(test, 2, len(jsonRequest))
+
+	var attachments []interface{}
+	attachments = jsonRequest["attachments"].([]interface{})
+	var attachment map[string]interface{}
+	attachment = attachments[0].(map[string]interface{})
+
+	assert.Equal(test, 1, len(attachments))
+	assert.Equal(test, 3, len(attachment))
+	assert.Equal(test, "Build failed!", attachment["text"])
+	assert.Equal(test, "red", attachment["color"])
+	assert.Equal(test, "Build notification", attachment["title"])
+	assert.Equal(test, "general", jsonRequest["channel"])
+}
+
+func TestBuildPayload(test *testing.T) {
+	cases := []struct {
+		parameters map[string]string
+		expected   map[string]interface{}
+	}{
+		{
+			map[string]string{
+				"text":    "Build failed!",
+				"color":   "red",
+				"title":   "Build notification",
+				"channel": "general",
+			},
+			map[string]interface{}{
+				"attachments": [1]map[string]string{
+					{
+						"color": "red",
+						"text":  "Build failed!",
+						"title": "Build notification",
+					},
+				},
+				"channel": "general",
+			},
+		},
+		{
+			map[string]string{
+				"text": "Build failed!",
+			},
+			map[string]interface{}{
+				"attachments": [1]map[string]string{
+					{
+						"color": "#cfd3d7",
+						"text":  "Build failed!",
+					},
+				},
+			},
+		},
+	}
+
+	for _, data := range cases {
+		set := flag.NewFlagSet("test", 0)
+		for key, value := range data.parameters {
+			set.String(key, value, "")
+		}
+
+		context := cli.NewContext(nil, set, nil)
+		actual := buildPayload(context)
+
+		assert.Equal(test, data.expected, actual)
 	}
 }
 
@@ -72,10 +200,8 @@ func TestGetHighlightColorForDrone(test *testing.T) {
 		setEnvironmentVariable(test, "DRONE", "true")
 		setEnvironmentVariable(test, "DRONE_BUILD_STATUS", data.buildStatus)
 		actual := getHighlightColor(data.inputColor)
-		if actual != data.expected {
-			test.Logf("Expected: %s, Actual: %s", data.expected, actual)
-			test.Fail()
-		}
+
+		assert.Equal(test, data.expected, actual)
 	}
 }
 
@@ -87,10 +213,7 @@ func TestGetHighlightColorForCIOtherThanDrone(test *testing.T) {
 
 	for _, data := range cases {
 		actual := getHighlightColor(data.inputColor)
-		if actual != data.expected {
-			test.Logf("Expected: %s, Actual: %s", data.expected, actual)
-			test.Fail()
-		}
+		assert.Equal(test, data.expected, actual)
 	}
 }
 
@@ -104,10 +227,8 @@ func TestParseTemplate(test *testing.T) {
 		setEnvironmentVariable(test, "CIRCLE_BUILD_URL", "https://someurl")
 		setEnvironmentVariable(test, "WEBHOOK", "https://secreturl")
 		actual := parseTemplate(data.template)
-		if actual != data.expected {
-			test.Logf("Expected: %s, Actual: %s", data.expected, actual)
-			test.Fail()
-		}
+
+		assert.Equal(test, data.expected, actual)
 	}
 }
 
@@ -119,10 +240,7 @@ func TestEnvVariableToCamelCase(test *testing.T) {
 
 	for _, data := range cases {
 		actual := envVariableToCamelCase(data.inputVariable)
-		if actual != data.expected {
-			test.Logf("Expected: %s, Actual: %s", data.expected, actual)
-			test.Fail()
-		}
+		assert.Equal(test, data.expected, actual)
 	}
 }
 
@@ -142,9 +260,6 @@ func TestContains(test *testing.T) {
 
 	for _, data := range cases {
 		actual := contains(secretsArray, data.envVariable)
-		if actual != data.expected {
-			test.Logf("Expected: %t, Actual: %t", data.expected, actual)
-			test.Fail()
-		}
+		assert.Equal(test, data.expected, actual)
 	}
 }

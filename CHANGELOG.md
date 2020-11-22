@@ -5,6 +5,10 @@
 -   make file
 -   First unit test
 -   Code coverage using coveralls
+-   [#10](https://github.com/devatherock/simple-slack/issues/10): Unit tests
+
+### Changed
+-   Refactored code for easier unit testing
 
 ## [0.4.0] - 2020-06-13
 ### Added
