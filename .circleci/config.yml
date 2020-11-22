@@ -31,13 +31,13 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
-      - run: |
-          echo "export SONAR_PR_KEY=${CIRCLE_PULL_REQUEST:49:10}" >> $BASH_ENV
-      - sonarcloud/scan
       - restore_cache:
           keys:
             - v1-pkg-cache
       - run: make check
+      - run: |
+          echo "echo ${CIRCLE_PULL_REQUEST} | cut -d'/' -f 7" >> $BASH_ENV
+      - sonarcloud/scan
   build:
     executor: docker-executor
     environment:
@@ -51,6 +51,9 @@ jobs:
       - run: |
           make coveralls
           make build
+      - run: |
+          echo "echo ${CIRCLE_PULL_REQUEST} | cut -d'/' -f 7" >> $BASH_ENV
+      - sonarcloud/scan
       - save_cache:
           paths:
             - "/go/pkg"
