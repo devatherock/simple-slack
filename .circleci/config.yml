@@ -27,11 +27,16 @@ executors:
 
 version: 2.1
 jobs:
+  parameters:
+    repo_name:
+      type: string
+      default: simple-slack
   test:
     executor: docker-executor
     steps:
       - checkout
-      - run: export SONAR_PR_KEY="${CIRCLE_PULL_REQUEST:49:10}"
+      - run: |
+          echo "export SONAR_PR_KEY=${CIRCLE_PULL_REQUEST:49:10}" >> $BASH_ENV
       - sonarcloud/scan
       - restore_cache:
           keys:
@@ -55,7 +60,7 @@ jobs:
             - "/go/pkg"
           key: v1-pkg-cache
       - persist_to_workspace:
-          root: ~/simple-slack
+          root: ~/<< parameters.repo_name >>
           paths:
             - release
 
@@ -65,7 +70,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - attach_workspace:
-          at: ~/simple-slack
+          at: ~/<< parameters.repo_name >>
       - run: |
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}
