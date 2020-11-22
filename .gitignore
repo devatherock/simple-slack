@@ -3,3 +3,4 @@ release/
 *.iml
 coverage.out
 coverage.html
+test-report.json
