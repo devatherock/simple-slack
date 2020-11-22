@@ -1,3 +1,7 @@
+clean:
+	rm coverage.out || true
+	rm coverage.html || true
+	rm -rf release || true
 test:
 	go test -v -race -coverprofile=coverage.out
 	go tool cover -html=coverage.out -o coverage.html
