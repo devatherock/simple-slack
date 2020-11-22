@@ -6,6 +6,7 @@ slack_image: &slack_image
         password: $DOCKER_PASSWORD
     
 orbs:
+  sonarcloud: sonarsource/sonarcloud@1.0.2
   docker: circleci/docker@1.5.0
 
 work_directory: &work_directory
@@ -34,6 +35,9 @@ jobs:
           keys:
             - v1-pkg-cache
       - run: make check
+      - run: |
+          echo "export SONAR_PR_KEY=$(echo ${CIRCLE_PULL_REQUEST} | cut -d'/' -f 7)" >> $BASH_ENV
+      - sonarcloud/scan
   build:
     executor: docker-executor
     environment:
@@ -47,6 +51,7 @@ jobs:
       - run: |
           make coveralls
           make build
+      - sonarcloud/scan
       - save_cache:
           paths:
             - "/go/pkg"
@@ -88,6 +93,7 @@ workflows:
       - build:
           context:
             - docker-credentials
+            - sonar-credentials
           filters:
             branches:
               only: master
@@ -130,6 +136,7 @@ workflows:
       - test:
           context:
             - docker-credentials
+            - sonar-credentials
           filters:
             branches:
               ignore: master
