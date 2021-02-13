@@ -32,6 +32,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
+            - v1-pkg-cache-{{ checksum "go.mod" }}
             - v1-pkg-cache
       - run: make check
   build:
@@ -43,6 +44,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
+            - v1-pkg-cache-{{ checksum "go.mod" }}
             - v1-pkg-cache
       - run: |
           make coveralls
@@ -50,7 +52,7 @@ jobs:
       - save_cache:
           paths:
             - "/go/pkg"
-          key: v1-pkg-cache
+          key: v1-pkg-cache-{{ checksum "go.mod" }}
       - persist_to_workspace:
           root: ~/simple-slack
           paths:
@@ -71,7 +73,7 @@ jobs:
           docker tag devatherock/simple-slack:$DEV_TAG devatherock/simple-slack:$TAG
           docker push devatherock/simple-slack:$TAG
 
-  notify_success:
+  notify:
     <<: *slack_image
     <<: *resource_class
     environment:
@@ -103,7 +105,7 @@ workflows:
           tag: "${CIRCLE_SHA1:0:8},latest"
           use-remote-docker: true
           docker-username: DOCKER_USERNAME
-      - notify_success:
+      - notify:
           context:
             - docker-credentials
             - slack-webhook
@@ -119,7 +121,7 @@ workflows:
               only: non-existent-branch
             tags:
               only: /^v[0-9\.]+$/
-      - notify_success:
+      - notify:
           context:
             - docker-credentials
             - slack-webhook

@@ -23,5 +23,5 @@ docker run --rm \
   -e BUILD_REF="refs/heads/master" \
   -e BUILD_AUTHOR=octocat \
   -e BUILD_LINK=http://github.com/octocat/hello-world \
-  devatherock/simple-slack:0.4.0
+  devatherock/simple-slack:latest
 ```
