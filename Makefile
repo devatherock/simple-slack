@@ -17,3 +17,5 @@ coveralls:
 	${GOPATH}/bin/goveralls -coverprofile=coverage.out
 build:
 	go build -o release/simpleslack
+build-linux:
+	CGO_ENABLED=0 GOOS=linux go build -o release/simpleslack

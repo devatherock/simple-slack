@@ -205,7 +205,27 @@ func TestGetHighlightColorForDrone(test *testing.T) {
 	}
 }
 
-func TestGetHighlightColorForCIOtherThanDrone(test *testing.T) {
+func TestGetHighlightColorForVela(test *testing.T) {
+	cases := []struct{ buildStatus, inputColor, expected string }{
+		{"success", "yellow", "yellow"},
+		{"failure", "yellow", "yellow"},
+		{"success", "", "#33ad7f"},
+		{"failure", "", "#a1040c"},
+		{"error", "", "#a1040c"},
+		{"killed", "", "#cfd3d7"},
+		{"pending", "", "#cfd3d7"},
+	}
+
+	for _, data := range cases {
+		setEnvironmentVariable(test, "VELA", "true")
+		setEnvironmentVariable(test, "VELA_BUILD_STATUS", data.buildStatus)
+		actual := getHighlightColor(data.inputColor)
+
+		assert.Equal(test, data.expected, actual)
+	}
+}
+
+func TestGetHighlightColorForOtherCI(test *testing.T) {
 	cases := []struct{ inputColor, expected string }{
 		{"yellow", "yellow"},
 		{"", "#cfd3d7"},

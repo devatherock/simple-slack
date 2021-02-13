@@ -1,11 +1,15 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- feat: Used `VELA_BUILD_STATUS` environment variable to choose message highlight color in vela
+
 ## [0.5.0] - 2020-11-22
 ### Added
--   make file
--   First unit test
--   Code coverage using coveralls
--   [#10](https://github.com/devatherock/simple-slack/issues/10): Unit tests
+- make file
+- First unit test
+- Code coverage using coveralls
+- [#10](https://github.com/devatherock/simple-slack/issues/10): Unit tests
 
 ### Changed
 -   Refactored code for easier unit testing

@@ -18,6 +18,8 @@ import (
 var secretEnvVariables = []string{"PLUGIN_WEBHOOK", "SLACK_WEBHOOK", "WEBHOOK"}
 
 const defaultColor string = "#cfd3d7" // grey
+const successColor string = "#33ad7f" // green
+const failureColor string = "#a1040c" // red
 
 func main() {
 	runApp(os.Args)
@@ -63,9 +65,7 @@ func runApp(args []string) {
 	}
 
 	err := app.Run(args)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
 }
 
 // Creates a String CLI parameter
@@ -147,9 +147,20 @@ func getHighlightColor(inputColor string) (outputColor string) {
 
 		switch buildStatus {
 		case "success":
-			outputColor = "#33ad7f" // green
+			outputColor = successColor
 		case "failure", "error", "killed":
-			outputColor = "#a1040c" // red
+			outputColor = failureColor
+		default:
+			outputColor = defaultColor
+		}
+	} else if os.Getenv("VELA") == "true" {
+		buildStatus := os.Getenv("VELA_BUILD_STATUS")
+
+		switch buildStatus {
+		case "success", "running": // When none of the previous steps have failed, VELA_BUILD_STATUS has the value running within a step
+			outputColor = successColor
+		case "failure", "error":
+			outputColor = failureColor
 		default:
 			outputColor = defaultColor
 		}
@@ -176,9 +187,7 @@ func parseTemplate(templateText string) string {
 	buffer := new(bytes.Buffer)
 	parsedTemplate, err := template.New("test").Parse(templateText)
 	err = parsedTemplate.Execute(buffer, templateContext)
-	if err != nil {
-		log.Fatal(err)
-	}
+	handleError(err)
 
 	return buffer.String()
 }
@@ -204,4 +213,11 @@ func envVariableToCamelCase(envVar string) (camelCase string) {
 func contains(stringArray []string, searchTerm string) bool {
 	index := sort.SearchStrings(stringArray, searchTerm)
 	return index < len(stringArray) && stringArray[index] == searchTerm
+}
+
+// Logs the error and exits the application
+func handleError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
