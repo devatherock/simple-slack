@@ -11,6 +11,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig"
 	"github.com/urfave/cli/v2"
 )
 
@@ -185,7 +186,7 @@ func parseTemplate(templateText string) string {
 	}
 
 	buffer := new(bytes.Buffer)
-	parsedTemplate, err := template.New("test").Parse(templateText)
+	parsedTemplate, err := template.New("test").Funcs(sprig.TxtFuncMap()).Parse(templateText)
 	err = parsedTemplate.Execute(buffer, templateContext)
 	handleError(err)
 

@@ -5,11 +5,18 @@ go 1.14
 require (
 	4d63.com/gochecknoglobals v0.0.0-20201008074935-acfc0b28355a // indirect
 	4d63.com/gochecknoinits v0.0.0-20200108094044-eb73b47b9fc4 // indirect
+	github.com/Masterminds/goutils v1.1.1 // indirect
+	github.com/Masterminds/semver v1.5.0 // indirect
+	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/alecthomas/gocyclo v0.0.0-20150208221726-aa8f8b160214 // indirect
 	github.com/google/go-cmp v0.5.3
+	github.com/google/uuid v1.2.0 // indirect
+	github.com/huandu/xstrings v1.3.2 // indirect
+	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/kisielk/gotool v1.0.0 // indirect
 	github.com/mattn/goveralls v0.0.7 // indirect
 	github.com/mibk/dupl v1.0.0 // indirect
+	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/stripe/safesql v0.2.0 // indirect
