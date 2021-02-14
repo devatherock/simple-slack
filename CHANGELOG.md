@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Added
 - feat: Used `VELA_BUILD_STATUS` environment variable to choose message highlight color in vela
+- feat: Added support for sprig functions within the text template([#32](https://github.com/devatherock/simple-slack/issues/32))
 
 ## [0.5.0] - 2020-11-22
 ### Added

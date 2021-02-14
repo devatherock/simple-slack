@@ -252,6 +252,20 @@ func TestParseTemplate(test *testing.T) {
 	}
 }
 
+func TestParseSprigTemplate(test *testing.T) {
+	cases := []struct{ template, expected string }{
+		{`Success: {{list .CircleBuildUrl ", Slack URL: " .Webhook | join "" }}`, "Success: https://someurl, Slack URL: "},
+	}
+
+	for _, data := range cases {
+		setEnvironmentVariable(test, "CIRCLE_BUILD_URL", "https://someurl")
+		setEnvironmentVariable(test, "WEBHOOK", "https://secreturl")
+		actual := parseTemplate(data.template)
+
+		assert.Equal(test, data.expected, actual)
+	}
+}
+
 func TestEnvVariableToCamelCase(test *testing.T) {
 	cases := []struct{ inputVariable, expected string }{
 		{"BUILD_STATUS", "BuildStatus"},
