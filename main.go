@@ -107,6 +107,10 @@ func run(context *cli.Context) error {
 	defer res.Body.Close()
 	log.Println("Message posted to webhook with http status", res.StatusCode)
 
+	if res.StatusCode > 399 {
+		return errors.New("HTTP request to Slack failed")
+	}
+
 	return nil
 }
 

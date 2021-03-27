@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+- feat: Quit with non-zero exit code when API call to Slack fails([#35](https://github.com/devatherock/simple-slack/issues/35))
+
+## [0.6.0] - 2021-02-14
 ### Added
 - feat: Used `VELA_BUILD_STATUS` environment variable to choose message highlight color in vela
 - feat: Added support for sprig functions within the text template([#32](https://github.com/devatherock/simple-slack/issues/32))
