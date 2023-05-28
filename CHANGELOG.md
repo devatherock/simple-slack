@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 ### Changed
+- Updated dockerhub readme in CI pipeline
+
+## [0.7.0] - 2021-04-06
+### Changed
 - feat: Quit with non-zero exit code when API call to Slack fails([#35](https://github.com/devatherock/simple-slack/issues/35))
 
 ## [0.6.0] - 2021-02-14

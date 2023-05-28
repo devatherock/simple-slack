@@ -24,7 +24,7 @@ release_filter: &release_filter
 executors:
   docker-executor:
     docker:
-    - image: circleci/golang:1.14
+    - image: cimg/go:1.14
       auth:
         username: $DOCKER_USERNAME
         password: $DOCKER_PASSWORD
@@ -64,6 +64,20 @@ jobs:
           root: ~/simple-slack
           paths:
             - release
+
+  dockerhub_readme:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    steps:
+      - checkout
+      - run: |
+          docker run -v $PWD:/workspace \
+              -e DOCKERHUB_USERNAME \
+              -e DOCKERHUB_PASSWORD \
+              -e DOCKERHUB_REPOSITORY='devatherock/simple-slack' \
+              -e SHORT_DESCRIPTION='CI plugin to post messages to slack' \
+              -e README_FILEPATH='/workspace/README.md' \
+              peterevans/dockerhub-description:3.4.1
 
   publish_release:
     executor: docker-executor
@@ -112,12 +126,19 @@ workflows:
           tag: "${CIRCLE_SHA1:0:8},latest"
           use-remote-docker: true
           docker-username: DOCKER_USERNAME
+      - dockerhub_readme:
+          context:
+            - docker-credentials
+            - dockerhub-readme-credentials
+          requires:
+            - publish
       - notify:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - publish
+            - dockerhub_readme
+
   release:
     jobs:
       - publish_release:
