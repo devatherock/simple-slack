@@ -51,6 +51,21 @@ executors:
 
 version: 2.1
 jobs:
+  changelog_updater:
+    docker:
+      - image: devatherock/changelog-updater:0.1.0
+        <<: *docker_auth
+    <<: *resource_class
+    environment:
+      VELA_BUILD_AUTHOR: "renovate[bot]"
+      VELA_BUILD_AUTHOR_EMAIL: "29139614+renovate[bot]@users.noreply.github.com"
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "4a:86:fe:0e:c3:0e:ad:0d:1d:5c:3e:48:cf:28:39:5d"
+      - checkout
+      - run: sh /scripts/entry-point.sh
+
   test:
     executor: docker-executor
     steps:
@@ -212,10 +227,16 @@ workflows:
 
   pr_check:
     jobs:
+      - changelog_updater:
+          context:
+            - docker-credentials
+            - changelog-updater-credentials
+          <<: *pr_filter
       - test:
           context:
             - docker-credentials
-          <<: *pr_filter
+          requires:
+            - changelog_updater
       - fast_integration_test:
           context:
             - docker-credentials
