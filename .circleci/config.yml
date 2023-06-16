@@ -1,19 +1,19 @@
+docker_auth: &docker_auth
+  auth:
+    username: $DOCKER_USERNAME
+    password: $DOCKER_PASSWORD
+
 slack_image: &slack_image
   docker:
     - image: devatherock/simple-slack:latest
-      auth:
-        username: $DOCKER_USERNAME
-        password: $DOCKER_PASSWORD
-    
-orbs:
-  docker: circleci/docker@1.5.0
+      <<: *docker_auth
 
 work_directory: &work_directory
   working_directory: ~/simple-slack
 
 resource_class: &resource_class
   resource_class: small
-  
+
 release_filter: &release_filter
   filters:
     branches:
@@ -21,15 +21,28 @@ release_filter: &release_filter
     tags:
       only: /^v[0-9\.]+$/
 
+pr_filter: &pr_filter
+  filters:
+    branches:
+      ignore: master
+
+parameters:
+  go_version:
+    type: string
+    default: "1.18"
+
 executors:
   docker-executor:
     docker:
-    - image: cimg/go:1.14
-      auth:
-        username: $DOCKER_USERNAME
-        password: $DOCKER_PASSWORD
+    - image: cimg/go:<< pipeline.parameters.go_version >>
+      <<: *docker_auth
     <<: *resource_class
-    <<: *work_directory  
+    <<: *work_directory
+  machine-executor:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    resource_class: medium
+    <<: *work_directory
 
 version: 2.1
 jobs:
@@ -42,11 +55,16 @@ jobs:
             - v1-pkg-cache-{{ checksum "go.mod" }}
             - v1-pkg-cache
       - run: make check
+
+  fast_integration_test:
+    executor: machine-executor
+    steps:
+      - checkout
+      - run: |
+          make docker-build integration-test skip_pull=true
+
   build:
     executor: docker-executor
-    environment:
-      CGO_ENABLED: 0
-      GOOS: linux
     steps:
       - checkout
       - restore_cache:
@@ -55,20 +73,30 @@ jobs:
             - v1-pkg-cache
       - run: |
           make coveralls
-          make build
+          make build-all
       - save_cache:
           paths:
-            - "/go/pkg"
+            - "/home/circleci/go/pkg"
           key: v1-pkg-cache-{{ checksum "go.mod" }}
-      - persist_to_workspace:
-          root: ~/simple-slack
-          paths:
-            - release
+
+  publish:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/simple-slack
+      - run: |
+          TAG=${CIRCLE_SHA1:0:8}
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker build \
+              --build-arg GO_VERSION=<< pipeline.parameters.go_version >> \
+              -t devatherock/simple-slack:$TAG \
+              -t devatherock/simple-slack:latest \
+              -f build/Dockerfile .
 
   dockerhub_readme:
-    machine:
-      image: ubuntu-2204:2023.04.2
-      resource_class: medium
+    executor: machine-executor
     steps:
       - checkout
       - run: |
@@ -79,6 +107,16 @@ jobs:
               -e SHORT_DESCRIPTION='CI plugin to post messages to slack' \
               -e README_FILEPATH='/workspace/README.md' \
               peterevans/dockerhub-description:3.4.1
+
+  integration_test:
+    parameters:
+      runner:
+        type: executor
+    executor: << parameters.runner >>
+    steps:
+      - checkout
+      - run: |
+          make integration-test
 
   publish_release:
     executor: docker-executor
@@ -115,30 +153,30 @@ workflows:
           filters:
             branches:
               only: master
-      - docker/publish:
-          name: publish
-          executor: docker-executor
+      - publish:
           context:
             - docker-credentials
           requires:
             - build
-          image: devatherock/simple-slack  
-          attach-at: ~/simple-slack
-          tag: "${CIRCLE_SHA1:0:8},latest"
-          use-remote-docker: true
-          docker-username: DOCKER_USERNAME
       - dockerhub_readme:
           context:
             - docker-credentials
             - dockerhub-readme-credentials
           requires:
             - publish
+      - integration_test:
+          name: integration_test_amd
+          context:
+            - docker-credentials
+          runner: machine-executor
+          requires:
+            - dockerhub_readme
       - notify:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - dockerhub_readme
+            - integration_test_amd
 
   release:
     jobs:
@@ -153,11 +191,15 @@ workflows:
           <<: *release_filter
           requires:
             - publish_release
+
   pr_check:
     jobs:
       - test:
           context:
             - docker-credentials
-          filters:
-            branches:
-              ignore: master
+          <<: *pr_filter
+      - fast_integration_test:
+          context:
+            - docker-credentials
+          requires:
+            - test

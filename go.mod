@@ -1,27 +1,29 @@
 module github.com/devatherock/simple-slack
 
-go 1.14
+go 1.18
 
 require (
-	4d63.com/gochecknoglobals v0.0.0-20201008074935-acfc0b28355a // indirect
-	4d63.com/gochecknoinits v0.0.0-20200108094044-eb73b47b9fc4 // indirect
+	github.com/Masterminds/sprig v2.22.0+incompatible
+	github.com/devatherock/vela-template-tester v1.0.0
+	github.com/stretchr/testify v1.8.4
+	github.com/urfave/cli/v2 v2.25.6
+)
+
+require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/alecthomas/gocyclo v0.0.0-20150208221726-aa8f8b160214 // indirect
-	github.com/google/go-cmp v0.5.3
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/uuid v1.2.0 // indirect
-	github.com/huandu/xstrings v1.3.2 // indirect
+	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
-	github.com/kisielk/gotool v1.0.0 // indirect
-	github.com/mattn/goveralls v0.0.7 // indirect
-	github.com/mibk/dupl v1.0.0 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
-	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989 // indirect
-	github.com/stretchr/testify v1.4.0
-	github.com/stripe/safesql v0.2.0 // indirect
-	github.com/urfave/cli/v2 v2.2.0
-	github.com/walle/lll v1.0.1 // indirect
-	mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed // indirect
-	mvdan.cc/lint v0.0.0-20170908181259-adc824a0674b // indirect
+	github.com/mitchellh/reflectwalk v1.0.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	golang.org/x/crypto v0.3.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
