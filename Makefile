@@ -18,7 +18,7 @@ endif
 	go tool cover -html=coverage.out -o coverage.html
 coveralls:
 	go test -v ./... -tags test -covermode=count -coverprofile=coverage.out -json > test-report.json
-	go get github.com/mattn/goveralls
+	go install github.com/mattn/goveralls
 	${GOPATH}/bin/goveralls -coverprofile=coverage.out
 build-all:
 	gofmt -l -w -s .
