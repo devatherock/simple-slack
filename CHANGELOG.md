@@ -1,8 +1,13 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- [#30](https://github.com/devatherock/simple-slack/issues/30): functional tests
+
 ### Changed
 - Updated dockerhub readme in CI pipeline
+- Upgraded `go` to `1.18`
+- Set alpine version to `3.14.10`
 
 ## [0.7.0] - 2021-04-06
 ### Changed
