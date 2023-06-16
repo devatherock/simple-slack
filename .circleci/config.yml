@@ -43,6 +43,11 @@ executors:
       image: ubuntu-2204:2023.04.2
     resource_class: medium
     <<: *work_directory
+  arm-executor:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    <<: *work_directory
 
 version: 2.1
 jobs:
@@ -89,7 +94,11 @@ jobs:
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker build \
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --push \
               --build-arg GO_VERSION=<< pipeline.parameters.go_version >> \
               -t devatherock/simple-slack:$TAG \
               -t devatherock/simple-slack:latest \
@@ -129,9 +138,10 @@ jobs:
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker pull devatherock/simple-slack:$DEV_TAG
-          docker tag devatherock/simple-slack:$DEV_TAG devatherock/simple-slack:$TAG
-          docker push devatherock/simple-slack:$TAG
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx imagetools create \
+            -t devatherock/simple-slack:$TAG devatherock/simple-slack:$DEV_TAG
 
   notify:
     <<: *slack_image
@@ -170,6 +180,13 @@ workflows:
             - docker-credentials
           runner: machine-executor
           requires:
+            - publish
+      - integration_test:
+          name: integration_test_arm
+          context:
+            - docker-credentials
+          runner: arm-executor
+          requires:
             - dockerhub_readme
       - notify:
           context:
@@ -177,6 +194,7 @@ workflows:
             - slack-webhook
           requires:
             - integration_test_amd
+            - integration_test_arm
 
   release:
     jobs:
