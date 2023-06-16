@@ -4,8 +4,7 @@ FROM golang:${GO_VERSION}-alpine3.14 AS build
 COPY . /home/workspace
 WORKDIR /home/workspace
 
-RUN mkdir -p bin && \
-    go build -o bin/simpleslack ./...
+RUN go build -o bin/simpleslack ./...
 
 
 FROM alpine:3.14.10
