@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+- chore(deps): update alpine docker tag to v3.18.2
+
+## [1.0.0] - 2023-06-16
 ### Added
 - [#30](https://github.com/devatherock/simple-slack/issues/30): functional tests
 
