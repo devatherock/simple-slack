@@ -77,7 +77,7 @@ jobs:
       - run: make check
 
   fast_integration_test:
-    executor: machine-executor
+    executor: arm-executor
     steps:
       - checkout
       - run: |
