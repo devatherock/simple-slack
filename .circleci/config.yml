@@ -3,6 +3,9 @@ docker_auth: &docker_auth
     username: $DOCKER_USERNAME
     password: $DOCKER_PASSWORD
 
+workspace: &workspace
+  at: ~/simple-slack
+
 slack_image: &slack_image
   docker:
     - image: devatherock/simple-slack:latest
@@ -30,6 +33,9 @@ parameters:
   go_version:
     type: string
     default: "1.18"
+  repo_name:
+    type: string
+    default: "simple-slack"
 
 executors:
   docker-executor:
@@ -105,7 +111,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - attach_workspace:
-          at: ~/simple-slack
+          <<: *workspace
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
@@ -120,17 +126,21 @@ jobs:
               -f build/Dockerfile .
 
   dockerhub_readme:
-    executor: machine-executor
+    docker:
+      - image: peterevans/dockerhub-description:3.4.2
+        <<: *docker_auth
+    <<: *resource_class
+    <<: *work_directory
+    environment:
+      DOCKERHUB_REPOSITORY: 'devatherock/<< pipeline.parameters.repo_name >>'
+      SHORT_DESCRIPTION: 'CI plugin to post messages to slack'
+      README_FILEPATH: README.md
     steps:
       - checkout
+      - attach_workspace:
+          <<: *workspace
       - run: |
-          docker run -v $PWD:/workspace \
-              -e DOCKERHUB_USERNAME \
-              -e DOCKERHUB_PASSWORD \
-              -e DOCKERHUB_REPOSITORY='devatherock/simple-slack' \
-              -e SHORT_DESCRIPTION='CI plugin to post messages to slack' \
-              -e README_FILEPATH='/workspace/README.md' \
-              peterevans/dockerhub-description:3.4.1
+          sh /entrypoint.sh
 
   integration_test:
     parameters:
@@ -148,7 +158,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - attach_workspace:
-          at: ~/simple-slack
+          <<: *workspace
       - run: |
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}

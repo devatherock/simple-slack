@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+- Made only HIGH bolt vulnerabilities create issues
 
 ## [1.0.0] - 2023-06-16
 ### Added
