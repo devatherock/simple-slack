@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - Made only HIGH bolt vulnerabilities create issues
+- fix(deps): update module github.com/urfave/cli/v2 to v2.25.7
 
 ## [1.0.0] - 2023-06-16
 ### Added
