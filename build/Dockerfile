@@ -1,5 +1,5 @@
-ARG GO_VERSION=1.18
-FROM golang:${GO_VERSION}-alpine3.17 AS build
+ARG GO_VERSION=1.19
+FROM golang:${GO_VERSION}-alpine3.18 AS build
 
 COPY . /home/workspace
 WORKDIR /home/workspace
