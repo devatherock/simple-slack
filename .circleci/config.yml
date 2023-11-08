@@ -32,7 +32,7 @@ pr_filter: &pr_filter
 parameters:
   go_version:
     type: string
-    default: "1.18"
+    default: "1.19"
   repo_name:
     type: string
     default: "simple-slack"

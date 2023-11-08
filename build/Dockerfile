@@ -1,5 +1,5 @@
-ARG GO_VERSION=1.18
-FROM golang:${GO_VERSION}-alpine3.17 AS build
+ARG GO_VERSION=1.19
+FROM golang:${GO_VERSION}-alpine3.18 AS build
 
 COPY . /home/workspace
 WORKDIR /home/workspace
@@ -7,7 +7,7 @@ WORKDIR /home/workspace
 RUN go build -o bin/simpleslack ./...
 
 
-FROM alpine:3.17.4
+FROM alpine:3.18.4
 
 LABEL maintainer="devatherock@gmail.com"
 
