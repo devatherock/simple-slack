@@ -7,7 +7,7 @@ WORKDIR /home/workspace
 RUN go build -o bin/simpleslack ./...
 
 
-FROM alpine:3.18.4
+FROM alpine:3.18.5
 
 LABEL maintainer="devatherock@gmail.com"
 
