@@ -3,11 +3,9 @@
 ## [Unreleased]
 ### Changed
 - Made only HIGH bolt vulnerabilities create issues
-- fix(deps): update module github.com/urfave/cli/v2 to v2.25.7
-- chore(deps): update alpine docker tag to v3.18.4
-- Upgraded go to `1.19`
-- chore(deps): update alpine docker tag to v3.18.5
 - fix(deps): update module github.com/urfave/cli/v2 to v2.26.0
+- chore(deps): update alpine docker tag to v3.19.0
+- Upgraded go to `1.20`
 
 ## [1.0.0] - 2023-06-16
 ### Added
