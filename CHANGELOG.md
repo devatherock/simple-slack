@@ -6,6 +6,7 @@
 - fix(deps): update module github.com/urfave/cli/v2 to v2.26.0
 - chore(deps): update alpine docker tag to v3.19.0
 - Upgraded go to `1.20`
+- chore(deps): bump golang.org/x/crypto from 0.3.0 to 0.17.0
 
 ## [1.0.0] - 2023-06-16
 ### Added
