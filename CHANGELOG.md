@@ -9,6 +9,7 @@
 - fix(deps): update module github.com/urfave/cli/v2 to v2.27.0
 - fix(deps): update module github.com/urfave/cli/v2 to v2.27.1
 - chore(deps): update alpine docker tag to v3.19.1
+- chore(deps): update peterevans/dockerhub-description docker tag to v4
 
 ## [1.0.0] - 2023-06-16
 ### Added
