@@ -3,6 +3,10 @@ docker_auth: &docker_auth
     username: $DOCKER_USERNAME
     password: $DOCKER_PASSWORD
 
+vm_executor_image: &vm_executor_image
+  machine:
+    image: ubuntu-2204:2023.04.2    
+
 workspace: &workspace
   at: ~/simple-slack
 
@@ -29,6 +33,9 @@ pr_filter: &pr_filter
     branches:
       ignore: master
 
+orbs:
+  templates: devatherock/circleci-templates@0.5.0
+
 parameters:
   go_version:
     type: string
@@ -45,33 +52,16 @@ executors:
     <<: *resource_class
     <<: *work_directory
   machine-executor:
-    machine:
-      image: ubuntu-2204:2023.04.2
+    <<: *vm_executor_image
     resource_class: medium
     <<: *work_directory
   arm-executor:
-    machine:
-      image: ubuntu-2004:2022.04.1
+    <<: *vm_executor_image
     resource_class: arm.medium
     <<: *work_directory
 
 version: 2.1
 jobs:
-  changelog_updater:
-    docker:
-      - image: devatherock/changelog-updater:0.1.0
-        <<: *docker_auth
-    <<: *resource_class
-    environment:
-      VELA_BUILD_AUTHOR: "renovate[bot]"
-      VELA_BUILD_AUTHOR_EMAIL: "29139614+renovate[bot]@users.noreply.github.com"
-    steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "4a:86:fe:0e:c3:0e:ad:0d:1d:5c:3e:48:cf:28:39:5d"
-      - checkout
-      - run: sh /scripts/entry-point.sh
-
   test:
     executor: docker-executor
     steps:
@@ -125,23 +115,6 @@ jobs:
               -t devatherock/simple-slack:latest \
               -f build/Dockerfile .
 
-  dockerhub_readme:
-    docker:
-      - image: peterevans/dockerhub-description:3.4.2
-        <<: *docker_auth
-    <<: *resource_class
-    <<: *work_directory
-    environment:
-      DOCKERHUB_REPOSITORY: 'devatherock/<< pipeline.parameters.repo_name >>'
-      SHORT_DESCRIPTION: 'CI plugin to post messages to slack'
-      README_FILEPATH: README.md
-    steps:
-      - checkout
-      - attach_workspace:
-          <<: *workspace
-      - run: |
-          sh /entrypoint.sh
-
   integration_test:
     parameters:
       runner:
@@ -193,10 +166,14 @@ workflows:
             - docker-credentials
           requires:
             - build
-      - dockerhub_readme:
+      - templates/dockerhub_readme_update:
+          name: dockerhub_readme
           context:
             - docker-credentials
             - dockerhub-readme-credentials
+          docker_image: '<< pipeline.parameters.repo_name >>'
+          image_description: 'CI plugin to post messages to slack'
+          work_dir: '~/<< pipeline.parameters.repo_name >>'  
           requires:
             - publish
       - integration_test:
@@ -237,7 +214,8 @@ workflows:
 
   pr_check:
     jobs:
-      - changelog_updater:
+      - templates/changelog_updater:
+          name: changelog_updater
           context:
             - docker-credentials
             - changelog-updater-credentials
