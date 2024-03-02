@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/devatherock/vela-template-tester v1.0.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.1
 )
 
