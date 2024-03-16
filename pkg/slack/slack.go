@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"bytes"
@@ -12,7 +12,6 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
-	"github.com/urfave/cli/v2"
 )
 
 // Presorted for contains check to work
@@ -22,77 +21,27 @@ const defaultColor string = "#cfd3d7" // grey
 const successColor string = "#33ad7f" // green
 const failureColor string = "#a1040c" // red
 
-func main() {
-	runApp(os.Args)
+type SlackRequest struct {
+	Text    string `json:",omitempty"`
+	Channel string `json:",omitempty"`
+	Color   string `json:",omitempty"`
+	Title   string `json:",omitempty"`
+	Webhook string `json:",omitempty"`
 }
 
-// Initializes and runs the app
-func runApp(args []string) {
-	app := cli.NewApp()
-	app.Name = "simple slack plugin"
-	app.Before = validate
-	app.Action = run
-	app.Flags = []cli.Flag{
-		createStringCliFlag(
-			"color",
-			[]string{"c"},
-			"Color in which the message block will be highlighted",
-			[]string{"COLOR", "PLUGIN_COLOR", "PARAMETER_COLOR"},
-		),
-		createStringCliFlag(
-			"text",
-			[]string{"t"},
-			"The message content",
-			[]string{"TEXT", "PLUGIN_TEXT", "PARAMETER_TEXT"},
-		),
-		createStringCliFlag(
-			"title",
-			[]string{"ti"},
-			"The message title",
-			[]string{"TITLE", "PLUGIN_TITLE", "PARAMETER_TITLE"},
-		),
-		createStringCliFlag(
-			"channel",
-			[]string{"ch"},
-			"The slack channel name",
-			[]string{"CHANNEL", "PLUGIN_CHANNEL", "PARAMETER_CHANNEL"},
-		),
-		createStringCliFlag(
-			"webhook",
-			[]string{"u"},
-			"The slack webhook URL",
-			[]string{"WEBHOOK", "PLUGIN_WEBHOOK", "SLACK_WEBHOOK"},
-		),
+func Notify(request SlackRequest) error {
+	err := validate(request)
+	if err != nil {
+		return err
 	}
 
-	err := app.Run(args)
-	handleError(err)
-}
-
-// Creates a String CLI parameter
-func createStringCliFlag(name string, aliases []string, usage string, envVars []string) *cli.StringFlag {
-	return &cli.StringFlag{
-		Name:    name,
-		Aliases: aliases,
-		Usage:   usage,
-		EnvVars: envVars,
-	}
-}
-
-// Validates the input parameters
-func validate(context *cli.Context) error {
-	if context.String("text") == "" || context.String("webhook") == "" {
-		return errors.New("Required parameters not specified")
+	payload, err := buildPayload(request)
+	if err != nil {
+		return err
 	}
 
-	return nil
-}
-
-// Sends the input text to slack
-func run(context *cli.Context) error {
-	payload := buildPayload(context)
 	data, _ := json.Marshal(payload)
-	req, err := http.NewRequest("POST", context.String("webhook"), bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", request.Webhook, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
@@ -115,19 +64,22 @@ func run(context *cli.Context) error {
 }
 
 // Builds the Slack HTTP request payload
-func buildPayload(context *cli.Context) (payload map[string]interface{}) {
+func buildPayload(request SlackRequest) (payload map[string]interface{}, err error) {
+	text, err := parseTemplate(request.Text)
+	if err != nil {
+		return
+	}
+
 	// Build attachments section
-	text := parseTemplate(context.String("text"))
 	attachments := [1]map[string]string{
 		{
-			"color": getHighlightColor(context.String("color")),
+			"color": getHighlightColor(request.Color),
 			"text":  text,
 		},
 	}
 
-	title := context.String("title")
-	if title != "" {
-		attachments[0]["title"] = title
+	if request.Title != "" {
+		attachments[0]["title"] = request.Title
 	}
 
 	// Build complete payload
@@ -135,12 +87,20 @@ func buildPayload(context *cli.Context) (payload map[string]interface{}) {
 		"attachments": attachments,
 	}
 
-	channel := context.String("channel")
-	if channel != "" {
-		payload["channel"] = channel
+	if request.Channel != "" {
+		payload["channel"] = request.Channel
 	}
 
 	return
+}
+
+// Validates the input parameters
+func validate(request SlackRequest) error {
+	if request.Text == "" || request.Webhook == "" {
+		return errors.New("Required parameters not specified")
+	}
+
+	return nil
 }
 
 // Decides the highlight color based on build status
@@ -178,7 +138,7 @@ func getHighlightColor(inputColor string) (outputColor string) {
 
 // Processes the input text as a template with environment variables as the
 // context
-func parseTemplate(templateText string) string {
+func parseTemplate(templateText string) (string, error) {
 	var templateContext = make(map[string]string)
 	for _, element := range os.Environ() {
 		variable := strings.Split(element, "=")
@@ -191,10 +151,12 @@ func parseTemplate(templateText string) string {
 
 	buffer := new(bytes.Buffer)
 	parsedTemplate, err := template.New("test").Funcs(sprig.TxtFuncMap()).Parse(templateText)
-	err = parsedTemplate.Execute(buffer, templateContext)
-	handleError(err)
+	if err != nil {
+		return "", err
+	}
 
-	return buffer.String()
+	err = parsedTemplate.Execute(buffer, templateContext)
+	return buffer.String(), err
 }
 
 // Converts an environment variable name into a camelcase string. For example,
@@ -218,11 +180,4 @@ func envVariableToCamelCase(envVar string) (camelCase string) {
 func contains(stringArray []string, searchTerm string) bool {
 	index := sort.SearchStrings(stringArray, searchTerm)
 	return index < len(stringArray) && stringArray[index] == searchTerm
-}
-
-// Logs the error and exits the application
-func handleError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
