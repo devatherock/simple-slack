@@ -1,0 +1,8 @@
+services:
+
+  simple-slack-api:
+    image: devatherock/simple-slack-api:${DOCKER_TAG:-latest}
+    environment:
+      PORT: '8082'
+    ports:
+      - '8082:8082'  

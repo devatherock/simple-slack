@@ -1,14 +1,18 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/devatherock/simple-slack/pkg/slack"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+		FullTimestamp: true,
+	})
 	runApp(os.Args)
 }
 

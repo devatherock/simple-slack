@@ -28,7 +28,7 @@ func TestValidateError(test *testing.T) {
 	expected := "Required parameters not specified"
 
 	for _, data := range cases {
-		actual := validate(data.request)
+		actual := Validate(data.request)
 
 		assert.Equal(test, expected, actual.Error())
 	}
@@ -39,7 +39,7 @@ func TestValidateSuccess(test *testing.T) {
 		Text:    "hello",
 		Webhook: "https://secreturl",
 	}
-	actual := validate(request)
+	actual := Validate(request)
 
 	assert.Nil(test, actual)
 }

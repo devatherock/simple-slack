@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -12,6 +11,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
+	log "github.com/sirupsen/logrus"
 )
 
 // Presorted for contains check to work
@@ -30,7 +30,7 @@ type SlackRequest struct {
 }
 
 func Notify(request SlackRequest) error {
-	err := validate(request)
+	err := Validate(request)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func Notify(request SlackRequest) error {
 		return err
 	}
 	defer res.Body.Close()
-	log.Println("Message posted to webhook with http status", res.StatusCode)
+	log.Info("Message posted to webhook with http status ", res.StatusCode)
 
 	if res.StatusCode > 399 {
 		return errors.New("HTTP request to Slack failed")
@@ -95,7 +95,7 @@ func buildPayload(request SlackRequest) (payload map[string]interface{}, err err
 }
 
 // Validates the input parameters
-func validate(request SlackRequest) error {
+func Validate(request SlackRequest) error {
 	if request.Text == "" || request.Webhook == "" {
 		return errors.New("Required parameters not specified")
 	}

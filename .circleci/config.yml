@@ -10,11 +10,6 @@ vm_executor_image: &vm_executor_image
 workspace: &workspace
   at: ~/simple-slack
 
-slack_image: &slack_image
-  docker:
-    - image: devatherock/simple-slack:latest
-      <<: *docker_auth
-
 work_directory: &work_directory
   working_directory: ~/simple-slack
 
@@ -73,11 +68,14 @@ jobs:
       - run: make check
 
   fast_integration_test:
+    parameters:
+      image_type:
+        type: string  
     executor: arm-executor
     steps:
       - checkout
       - run: |
-          make docker-build integration-test skip_pull=true
+          make docker-build-<< parameters.image_type >> integration-test-<< parameters.image_type >> skip_pull=true
 
   build:
     executor: docker-executor
@@ -96,6 +94,11 @@ jobs:
           key: v1-pkg-cache-{{ checksum "go.mod" }}
 
   publish:
+    parameters:
+      command_args:
+        type: string
+      docker_image:
+        type: string  
     executor: docker-executor
     steps:
       - checkout
@@ -111,22 +114,27 @@ jobs:
               --platform linux/amd64,linux/arm64 \
               --push \
               --build-arg GO_VERSION=<< pipeline.parameters.go_version >> \
-              -t devatherock/simple-slack:$TAG \
-              -t devatherock/simple-slack:latest \
-              -f build/Dockerfile .
+              -t devatherock/<< parameters.docker_image >>:$TAG \
+              -t devatherock/<< parameters.docker_image >>:latest \
+              << parameters.command_args >>
 
   integration_test:
     parameters:
+      command_args:
+        type: string    
       runner:
         type: executor
     executor: << parameters.runner >>
     steps:
       - checkout
       - run: |
-          make integration-test
+          make << parameters.command_args >>
 
-  publish_release:
+  release:
     executor: docker-executor
+    parameters:
+      docker_image:
+        type: string
     steps:
       - checkout
       - setup_remote_docker
@@ -139,17 +147,8 @@ jobs:
           docker buildx create --name rockbuilder \
             --driver docker-container --use --bootstrap
           docker buildx imagetools create \
-            -t devatherock/simple-slack:$TAG devatherock/simple-slack:$DEV_TAG
-
-  notify:
-    <<: *slack_image
-    <<: *resource_class
-    environment:
-      TEXT: "Success: {{.CircleBuildUrl}} by {{.CircleUsername}}"
-      CHANNEL: general
-      TITLE: "Build completed"
-    steps:
-      - run: /bin/simpleslack -c "#33ad7f"
+            -t devatherock/<< parameters.docker_image >>:$TAG \
+            devatherock/<< parameters.docker_image >>:$DEV_TAG
 
 workflows:
   version: 2.1
@@ -162,12 +161,33 @@ workflows:
             branches:
               only: master
       - publish:
+          name: publish_api
           context:
             - docker-credentials
+          command_args: '-f build/Api.Dockerfile .'
+          docker_image: 'simple-slack-api'  
+          requires:
+            - build
+      - publish:
+          name: publish_plugin
+          context:
+            - docker-credentials
+          command_args: '-f build/Plugin.Dockerfile .'
+          docker_image: 'simple-slack'  
           requires:
             - build
       - templates/dockerhub_readme_update:
-          name: dockerhub_readme
+          name: dockerhub_readme_api
+          context:
+            - docker-credentials
+            - dockerhub-readme-credentials
+          docker_image: 'simple-slack-api'
+          image_description: 'API to post messages to slack, waiting for a CircleCI workflow to complete if required'
+          work_dir: '~/<< pipeline.parameters.repo_name >>'  
+          requires:
+            - publish_api           
+      - templates/dockerhub_readme_update:
+          name: dockerhub_readme_plugin
           context:
             - docker-credentials
             - dockerhub-readme-credentials
@@ -175,42 +195,65 @@ workflows:
           image_description: 'CI plugin to post messages to slack'
           work_dir: '~/<< pipeline.parameters.repo_name >>'  
           requires:
-            - publish
+            - publish_plugin
       - integration_test:
-          name: integration_test_amd
+          name: integration_test_plugin_amd
           context:
             - docker-credentials
+          command_args: 'integration-test-plugin'
           runner: machine-executor
           requires:
-            - publish
+            - publish_plugin
       - integration_test:
-          name: integration_test_arm
+          name: integration_test_plugin_arm
           context:
             - docker-credentials
+          command_args: 'integration-test-plugin'  
           runner: arm-executor
           requires:
-            - dockerhub_readme
-      - notify:
+            - dockerhub_readme_plugin
+      - templates/slack:
+          name: notify
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - integration_test_amd
-            - integration_test_arm
+            - integration_test_plugin_amd
+            - integration_test_plugin_arm
 
-  release:
+  release_api:
     jobs:
-      - publish_release:
+      - release:
+          name: release_api
           context:
             - docker-credentials
+          docker_image: simple-slack-api
           <<: *release_filter
-      - notify:
+      - templates/slack:
+          name: notify
           context:
             - docker-credentials
             - slack-webhook
           <<: *release_filter
           requires:
-            - publish_release
+            - release_api
+
+  release_plugin:
+    jobs:
+      - release:
+          name: release_plugin
+          context:
+            - docker-credentials
+          docker_image: simple-slack
+          <<: *release_filter
+      - templates/slack:
+          name: notify
+          context:
+            - docker-credentials
+            - slack-webhook
+          <<: *release_filter
+          requires:
+            - release_plugin
 
   pr_check:
     jobs:
@@ -226,7 +269,9 @@ workflows:
           requires:
             - changelog_updater
       - fast_integration_test:
+          name: fast_integration_test_plugin
           context:
             - docker-credentials
+          image_type: 'plugin'  
           requires:
             - test
