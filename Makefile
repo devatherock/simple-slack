@@ -20,17 +20,30 @@ coveralls:
 	go test -v ./... -tags test -covermode=count -coverprofile=coverage.out -json > test-report.json
 	go install github.com/mattn/goveralls
 	${GOPATH}/bin/goveralls -coverprofile=coverage.out
+run-api:
+	go build -o bin/ ./...
+	./bin/app
 build-all:
 	gofmt -l -w -s .
 	go vet ./...
 	go test -v ./... -tags test
 	mkdir -p bin
-	go build -o bin/ ./...
-docker-build:
+	go build -o bin/ ./...	
+docker-build-plugin:
 	docker build -t devatherock/simple-slack:$(docker_tag) \
-	    -f build/Dockerfile .
-integration-test:
+	    -f build/Plugin.Dockerfile .
+integration-test-plugin:
 ifneq ($(skip_pull), true)
 	docker pull devatherock/simple-slack:$(docker_tag)
 endif
 	go test -v ./... -tags integration
+docker-build-api:
+	docker build -t devatherock/simple-slack-api:$(docker_tag) \
+	    -f build/Api.Dockerfile .
+integration-test-api:
+ifneq ($(skip_pull), true)
+	docker pull devatherock/simple-slack-api:$(docker_tag)
+endif
+	DOCKER_TAG=$(docker_tag) docker-compose -f build/docker-compose.yml up -d
+	sleep 1
+	docker-compose -f build/docker-compose.yml down		
