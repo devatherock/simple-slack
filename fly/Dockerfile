@@ -1,0 +1,1 @@
+FROM devatherock/simple-slack-api:latest
