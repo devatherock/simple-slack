@@ -11,6 +11,7 @@
 - chore(deps): update alpine docker tag to v3.19.1
 - fix(deps): update module github.com/stretchr/testify to v1.9.0
 - Moved functional logic away from the main file
+- feat: Added endpoint to send notification for CircleCI builds
 
 ## [1.0.0] - 2023-06-16
 ### Added
