@@ -12,6 +12,7 @@
 - fix(deps): update module github.com/stretchr/testify to v1.9.0
 - Moved functional logic away from the main file
 - feat: Added endpoint to send notification for CircleCI builds
+- chore: Added fly.io deployment configuration
 
 ## [1.0.0] - 2023-06-16
 ### Added

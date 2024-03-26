@@ -150,6 +150,21 @@ jobs:
             -t devatherock/<< parameters.docker_image >>:$TAG \
             devatherock/<< parameters.docker_image >>:$DEV_TAG
 
+  deploy:
+    executor: docker-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          <<: *workspace
+      - run:
+          name: Trigger deployment to fly.io
+          command: |
+            docker run --rm \
+              -e FLY_API_TOKEN \
+              -v $PWD:/work \
+              -w /work \
+              flyio/flyctl:v0.2.23 deploy     
+
 workflows:
   version: 2.1
   build_publish:
@@ -229,6 +244,12 @@ workflows:
             - docker-credentials
           docker_image: simple-slack-api
           <<: *release_filter
+      - deploy:
+          context:
+            - docker-credentials
+          <<: *release_filter
+          requires:
+            - release_api
       - templates/slack:
           name: notify
           context:
@@ -236,7 +257,7 @@ workflows:
             - slack-webhook
           <<: *release_filter
           requires:
-            - release_api
+            - deploy
 
   release_plugin:
     jobs:
