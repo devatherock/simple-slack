@@ -29,7 +29,7 @@ pr_filter: &pr_filter
       ignore: master
 
 orbs:
-  templates: devatherock/circleci-templates@0.5.0
+  templates: devatherock/circleci-templates@dev:alpha
 
 parameters:
   go_version:
@@ -163,18 +163,25 @@ jobs:
               -e FLY_API_TOKEN \
               -v $PWD:/work \
               -w /work \
-              flyio/flyctl:v0.2.23 deploy     
+              flyio/flyctl:v0.2.23 deploy
 
 workflows:
   version: 2.1
   build_publish:
     jobs:
-      - build:
+      - templates/slack:
+          name: notify
           context:
             - docker-credentials
+            - slack-webhook
           filters:
             branches:
               only: master
+      - build:
+          context:
+            - docker-credentials
+          requires:
+            - notify
       - publish:
           name: publish_api
           context:
@@ -227,54 +234,46 @@ workflows:
           runner: arm-executor
           requires:
             - dockerhub_readme_plugin
+
+  release_api:
+    jobs:
       - templates/slack:
           name: notify
           context:
             - docker-credentials
             - slack-webhook
-          requires:
-            - integration_test_plugin_amd
-            - integration_test_plugin_arm
-
-  release_api:
-    jobs:
+          <<: *release_filter  
       - release:
           name: release_api
           context:
             - docker-credentials
           docker_image: simple-slack-api
           <<: *release_filter
+          requires:
+            - notify          
       - deploy:
           context:
             - docker-credentials
           <<: *release_filter
           requires:
             - release_api
+
+  release_plugin:
+    jobs:
       - templates/slack:
           name: notify
           context:
             - docker-credentials
             - slack-webhook
           <<: *release_filter
-          requires:
-            - deploy
-
-  release_plugin:
-    jobs:
       - release:
           name: release_plugin
           context:
             - docker-credentials
           docker_image: simple-slack
           <<: *release_filter
-      - templates/slack:
-          name: notify
-          context:
-            - docker-credentials
-            - slack-webhook
-          <<: *release_filter
           requires:
-            - release_plugin
+            - notify          
 
   pr_check:
     jobs:
