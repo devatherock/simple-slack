@@ -5,6 +5,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,8 +25,8 @@ type CircleCiWorkFlow struct {
 	PipelineNumber int    `json:"pipeline_number,omitempty"`
 }
 
-func notify(notificationRequest NotificationRequest) (int, error) {
-	statusCode := 200
+func notify(notificationRequest NotificationRequest) (statusCode int, err error) {
+	statusCode = 200
 
 	slackRequest := slack.SlackRequest{}
 	slackRequest.Text = notificationRequest.Text
@@ -34,22 +35,20 @@ func notify(notificationRequest NotificationRequest) (int, error) {
 	slackRequest.Channel = notificationRequest.Channel
 	slackRequest.Webhook = notificationRequest.Webhook
 
-	if slackRequest.Text == "" {
-		slackRequest.Text = "Build completed"
-	}
-
-	err := slack.Validate(slackRequest)
-	if err != nil {
-		return 400, err
+	if slackRequest.Webhook == "" {
+		statusCode = 400
+		err = errors.New("webhook not specified")
+		return
 	}
 
 	if notificationRequest.BuildId == "" {
+		defaultTextIfMissing(&slackRequest)
 		err = slack.Notify(slackRequest)
 	} else {
 		statusCode, err = notifyOnBuildCompletion(notificationRequest.BuildId, notificationRequest.Token, slackRequest)
 	}
 
-	return statusCode, err
+	return
 }
 
 func notifyOnBuildCompletion(buildId string, token string, slackRequest slack.SlackRequest) (int, error) {
@@ -59,6 +58,7 @@ func notifyOnBuildCompletion(buildId string, token string, slackRequest slack.Sl
 
 	if token == "" {
 		log.Warn("No token found, but build id specified. Build id: ", buildId)
+		defaultTextIfMissing(&slackRequest)
 		err := slack.Notify(slackRequest)
 
 		if err != nil {
@@ -96,14 +96,16 @@ func monitor(buildId string, token string, slackRequest slack.SlackRequest) {
 
 		buildStatus = circleCiWorkFlow.Status
 		if buildStatus == "success" || buildStatus == "failed" {
-			slackRequest.Text = fmt.Sprintf(
-				"%s: <https://app.circleci.com/pipelines/%s/%d|%s-%d>",
-				strings.ToUpper(buildStatus[:1])+buildStatus[1:],
-				circleCiWorkFlow.Project,
-				circleCiWorkFlow.PipelineNumber,
-				circleCiWorkFlow.Project,
-				circleCiWorkFlow.PipelineNumber,
-			)
+			if slackRequest.Text == "" {
+				slackRequest.Text = fmt.Sprintf(
+					"%s: <https://app.circleci.com/pipelines/%s/%d|%s-%d>",
+					strings.ToUpper(buildStatus[:1])+buildStatus[1:],
+					circleCiWorkFlow.Project,
+					circleCiWorkFlow.PipelineNumber,
+					circleCiWorkFlow.Project,
+					circleCiWorkFlow.PipelineNumber,
+				)
+			}
 
 			if buildStatus == "success" {
 				slackRequest.Color = "#33ad7f"
@@ -131,4 +133,10 @@ func getCircleCiUrl() (circleCiUrl string) {
 	}
 
 	return
+}
+
+func defaultTextIfMissing(slackRequest *slack.SlackRequest) {
+	if slackRequest.Text == "" {
+		slackRequest.Text = "Build completed"
+	}
 }
