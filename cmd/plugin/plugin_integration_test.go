@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"testing"
 
+	localhelper "github.com/devatherock/simple-slack/test/helper"
 	"github.com/devatherock/vela-template-tester/test/helper"
 	"github.com/stretchr/testify/assert"
 )
@@ -156,21 +157,11 @@ func TestAllParameters(test *testing.T) {
 		assert.Equal(test, 0, exitCode)
 
 		// Verify request
-		jsonRequest := make(map[string]interface{})
-		json.Unmarshal(capturedRequest, &jsonRequest)
-		assert.Equal(test, 2, len(jsonRequest))
-
-		var attachments []interface{}
-		attachments = jsonRequest["attachments"].([]interface{})
-		var attachment map[string]interface{}
-		attachment = attachments[0].(map[string]interface{})
-
-		assert.Equal(test, 1, len(attachments))
-		assert.Equal(test, 3, len(attachment))
-		assert.Equal(test, "Failure: https://someurl, Slack URL: ", attachment["text"])
-		assert.Equal(test, "red", attachment["color"])
-		assert.Equal(test, "Build notification", attachment["title"])
-		assert.Equal(test, "general", jsonRequest["channel"])
+		localhelper.VerifySlackRequest(test, capturedRequest, map[string]string{
+			"text":  "Failure: https://someurl, Slack URL: ",
+			"color": "red",
+			"title": "Build notification",
+		})
 	}
 }
 

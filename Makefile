@@ -46,4 +46,5 @@ ifneq ($(skip_pull), true)
 endif
 	DOCKER_TAG=$(docker_tag) docker-compose -f build/docker-compose.yml up -d
 	sleep 1
+	go test -v ./... -tags api
 	docker-compose -f build/docker-compose.yml down		
