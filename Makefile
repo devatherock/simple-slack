@@ -47,4 +47,10 @@ endif
 	DOCKER_TAG=$(docker_tag) docker-compose -f build/docker-compose.yml up -d
 	sleep 1
 	go test -v ./... -tags api
-	docker-compose -f build/docker-compose.yml down		
+	docker-compose -f build/docker-compose.yml down
+deploy:
+	docker run --rm \
+        -e FLY_API_TOKEN \
+        -v $(CURDIR):/work \
+        -w /work \
+        flyio/flyctl:v0.2.23 deploy
