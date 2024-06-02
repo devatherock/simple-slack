@@ -13,7 +13,6 @@
 - Moved functional logic away from the main file
 - feat: Added endpoint to send notification for CircleCI builds
 - chore: Added fly.io deployment configuration
-- Prevented API from overriding supplied slack text for CircleCI builds
 
 ## [1.0.0] - 2023-06-16
 ### Added

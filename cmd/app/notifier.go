@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -118,11 +119,11 @@ func monitor(buildId string, token string, slackRequest slack.SlackRequest) {
 		} else {
 			// Wait if the build hasn't completed yet
 			log.Debug("Waiting for build ", buildId)
-			time.Sleep(5 * time.Second)
+			time.Sleep(time.Duration(getSleepInterval()) * time.Second)
 		}
 	}
 
-	log.Info("Sent notification for build ", buildId)
+	log.Info("Status of build ", buildId, " on exit is ", buildStatus)
 }
 
 func getCircleCiUrl() (circleCiUrl string) {
@@ -130,6 +131,18 @@ func getCircleCiUrl() (circleCiUrl string) {
 
 	if circleCiUrl == "" {
 		circleCiUrl = "https://circleci.com"
+	}
+
+	return
+}
+
+func getSleepInterval() (sleepInterval int) {
+	sleepIntervalText := os.Getenv("SLEEP_INTERVAL_SECS")
+
+	if sleepIntervalText == "" {
+		sleepInterval = 5
+	} else {
+		sleepInterval, _ = strconv.Atoi(sleepIntervalText)
 	}
 
 	return
