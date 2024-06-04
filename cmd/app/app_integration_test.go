@@ -32,13 +32,15 @@ func TestSendNotificationSuccessBuild(test *testing.T) {
 		capturedRequest, _ = ioutil.ReadAll(request.Body)
 		writer.Header().Set("Content-Type", "application/json")
 
-		if requestIndex == 0 {
+		if requestIndex == 0 || requestIndex == 3 {
 			requestUrl = request.Host + request.URL.Path
 			headers = request.Header
 
 			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"running"}`)
 		} else if requestIndex == 1 {
 			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"success"}`)
+		} else if requestIndex == 4 {
+			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"failed"}`)
 		} else {
 			fmt.Fprintln(writer, `{"success":true}`)
 		}
@@ -56,38 +58,56 @@ func TestSendNotificationSuccessBuild(test *testing.T) {
 	// Stop the server on return from the function
 	defer testServer.Close()
 
-	notificationRequest := map[string]interface{}{
-		"text":     "",
-		"channel":  "general",
-		"color":    "blue",
-		"title":    "Build completed",
-		"webhook":  "http://localhost:8085",
-		"build_id": "1234",
+	cases := []struct {
+		expectedStatus string
+		expectedColor  string
+	}{
+		{
+			"Success",
+			"#33ad7f",
+		},
+		{
+			"Failed",
+			"#a1040c",
+		},
 	}
 
-	jsonStr, _ := json.Marshal(&notificationRequest)
-	request, _ := http.NewRequest("POST", baseUrl+"/api/notification", bytes.NewBuffer(jsonStr))
+	progressIndex := 0
+	for _, data := range cases {
+		notificationRequest := map[string]interface{}{
+			"text":     "",
+			"channel":  "general",
+			"color":    "blue",
+			"title":    "Build completed",
+			"webhook":  "http://localhost:8085",
+			"build_id": "1234",
+		}
 
-	client := &http.Client{}
-	response, err := client.Do(request)
-	defer response.Body.Close()
+		jsonStr, _ := json.Marshal(&notificationRequest)
+		request, _ := http.NewRequest("POST", baseUrl+"/api/notification", bytes.NewBuffer(jsonStr))
 
-	assert.Nil(test, err)
-	assert.Equal(test, 204, response.StatusCode)
+		client := &http.Client{}
+		response, err := client.Do(request)
+		defer response.Body.Close()
 
-	// Wait for request to be processed completely
-	for requestIndex < 2 {
-		time.Sleep(1 * time.Second)
+		assert.Nil(test, err)
+		assert.Equal(test, 204, response.StatusCode)
+
+		// Wait for request to be processed completely
+		for requestIndex-progressIndex < 2 {
+			time.Sleep(1 * time.Second)
+		}
+		progressIndex = requestIndex
+
+		// Verify first CircleCI request
+		assert.Equal(test, "localhost:8085/api/v2/workflow/1234", requestUrl)
+		assert.Equal(test, "dummy", headers["Circle-Token"][0])
+
+		// Verify slack request
+		helper.VerifySlackRequest(test, capturedRequest, map[string]string{
+			"text":  fmt.Sprintf("%s: <https://app.circleci.com/pipelines/gh/devatherock/email-sender/292|gh/devatherock/email-sender-292>", data.expectedStatus),
+			"color": data.expectedColor,
+			"title": "Build completed",
+		})
 	}
-
-	// Verify first CircleCI request
-	assert.Equal(test, "localhost:8085/api/v2/workflow/1234", requestUrl)
-	assert.Equal(test, "dummy", headers["Circle-Token"][0])
-
-	// Verify slack request
-	helper.VerifySlackRequest(test, capturedRequest, map[string]string{
-		"text":  "Success: <https://app.circleci.com/pipelines/gh/devatherock/email-sender/292|gh/devatherock/email-sender-292>",
-		"color": "#33ad7f",
-		"title": "Build completed",
-	})
 }
