@@ -14,6 +14,7 @@
 - Moved functional logic away from the main file
 - feat: Added endpoint to send notification for CircleCI builds
 - chore: Added fly.io deployment configuration
+- fix(deps): update module github.com/urfave/cli/v2 to v2.27.2
 
 ## [1.0.0] - 2023-06-16
 ### Added
