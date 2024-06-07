@@ -3,7 +3,6 @@
 ## [Unreleased]
 ### Added
 - `circleci-templates` orb for common tasks
-- [#70](https://github.com/devatherock/simple-slack/issues/70): Integration tests for the API
 
 ### Changed
 - Made only HIGH bolt vulnerabilities create issues

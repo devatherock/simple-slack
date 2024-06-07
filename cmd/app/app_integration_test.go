@@ -172,3 +172,66 @@ func TestSendNotificationNoBuildId(test *testing.T) {
 		})
 	}
 }
+
+func TestSendNotificationNoWebhook(test *testing.T) {
+	notificationRequest := map[string]interface{}{
+		"text":    "",
+		"channel": "general",
+		"color":   "red",
+		"title":   "some title",
+	}
+
+	jsonStr, _ := json.Marshal(&notificationRequest)
+	request, _ := http.NewRequest("POST", baseUrl+"/api/notification", bytes.NewBuffer(jsonStr))
+
+	response, err := client.Do(request)
+	io.Copy(ioutil.Discard, response.Body)
+	defer response.Body.Close()
+
+	assert.Nil(test, err)
+	assert.Equal(test, 400, response.StatusCode)
+}
+
+func TestSendNotificationErrorFromSlack(test *testing.T) {
+	notificationRequest := map[string]interface{}{
+		"text":    "",
+		"channel": "general",
+		"color":   "red",
+		"title":   "some title",
+		"webhook": "http://localhost:8085",
+	}
+
+	jsonStr, _ := json.Marshal(&notificationRequest)
+	request, _ := http.NewRequest("POST", baseUrl+"/api/notification", bytes.NewBuffer(jsonStr))
+
+	response, err := client.Do(request)
+	io.Copy(ioutil.Discard, response.Body)
+	defer response.Body.Close()
+
+	assert.Nil(test, err)
+	assert.Equal(test, 400, response.StatusCode)
+}
+
+func TestSendNotificationInvalidJson(test *testing.T) {
+	request, _ := http.NewRequest("POST", baseUrl+"/api/notification", bytes.NewBuffer([]byte("some text")))
+
+	response, err := client.Do(request)
+	io.Copy(ioutil.Discard, response.Body)
+	defer response.Body.Close()
+
+	assert.Nil(test, err)
+	assert.Equal(test, 400, response.StatusCode)
+}
+
+func TestCheckHealth(test *testing.T) {
+	request, _ := http.NewRequest("GET", baseUrl+"/api/health", nil)
+
+	response, err := client.Do(request)
+	defer response.Body.Close()
+
+	assert.Nil(test, err)
+	assert.Equal(test, 200, response.StatusCode)
+
+	responseBody, _ := ioutil.ReadAll(response.Body)
+	assert.Equal(test, "UP", string(responseBody))
+}
