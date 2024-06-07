@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -20,7 +21,9 @@ import (
 
 const baseUrl string = "http://localhost:8082"
 
-func TestSendNotificationSuccessBuild(test *testing.T) {
+var client = &http.Client{}
+
+func TestSendNotificationWithBuildId(test *testing.T) {
 	var requestIndex = 0
 	var capturedRequest []byte
 	var requestUrl = ""
@@ -86,8 +89,8 @@ func TestSendNotificationSuccessBuild(test *testing.T) {
 		jsonStr, _ := json.Marshal(&notificationRequest)
 		request, _ := http.NewRequest("POST", baseUrl+"/api/notification", bytes.NewBuffer(jsonStr))
 
-		client := &http.Client{}
 		response, err := client.Do(request)
+		io.Copy(ioutil.Discard, response.Body)
 		defer response.Body.Close()
 
 		assert.Nil(test, err)
@@ -108,6 +111,64 @@ func TestSendNotificationSuccessBuild(test *testing.T) {
 			"text":  fmt.Sprintf("%s: <https://app.circleci.com/pipelines/gh/devatherock/email-sender/292|gh/devatherock/email-sender-292>", data.expectedStatus),
 			"color": data.expectedColor,
 			"title": "Build completed",
+		})
+	}
+}
+
+func TestSendNotificationNoBuildId(test *testing.T) {
+	var capturedRequest []byte
+
+	// Test HTTP server
+	testServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		capturedRequest, _ = ioutil.ReadAll(request.Body)
+		writer.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(writer, `{"success":true}`)
+	}))
+
+	// Stop the server on return from the function
+	defer testServer.Close()
+
+	cases := []struct {
+		text         string
+		color        string
+		expectedText string
+	}{
+		{
+			"Failed",
+			"red",
+			"Failed",
+		},
+		{
+			"",
+			"green",
+			"Build completed",
+		},
+	}
+
+	for _, data := range cases {
+		notificationRequest := map[string]interface{}{
+			"text":    data.text,
+			"channel": "general",
+			"color":   data.color,
+			"title":   "some title",
+			"webhook": testServer.URL,
+		}
+
+		jsonStr, _ := json.Marshal(&notificationRequest)
+		request, _ := http.NewRequest("POST", baseUrl+"/api/notification", bytes.NewBuffer(jsonStr))
+
+		response, err := client.Do(request)
+		io.Copy(ioutil.Discard, response.Body)
+		defer response.Body.Close()
+
+		assert.Nil(test, err)
+		assert.Equal(test, 200, response.StatusCode)
+
+		// Verify slack request
+		helper.VerifySlackRequest(test, capturedRequest, map[string]string{
+			"text":  data.expectedText,
+			"color": data.color,
+			"title": "some title",
 		})
 	}
 }
