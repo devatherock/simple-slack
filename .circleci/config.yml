@@ -154,6 +154,7 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
+      - setup_remote_docker
       - attach_workspace:
           <<: *workspace
       - run:

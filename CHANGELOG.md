@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+- Fixed bug in deployment step
+
+## [1.1.0] - 2024-06-07
 ### Added
 - `circleci-templates` orb for common tasks
 
