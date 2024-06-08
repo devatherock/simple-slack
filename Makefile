@@ -1,6 +1,7 @@
 docker_tag=latest
 skip_pull=false
 lint_yaml=false
+go_version=1.22
 
 clean:
 	rm -f coverage.out
@@ -31,6 +32,7 @@ build-all:
 	go build -o bin/ ./...	
 docker-build-plugin:
 	docker build -t devatherock/simple-slack:$(docker_tag) \
+	    --build-arg GO_VERSION=$(go_version) \
 	    -f build/Plugin.Dockerfile .
 integration-test-plugin:
 ifneq ($(skip_pull), true)
@@ -39,6 +41,7 @@ endif
 	go test -v ./... -tags integration
 docker-build-api:
 	docker build -t devatherock/simple-slack-api:$(docker_tag) \
+	    --build-arg GO_VERSION=$(go_version) \
 	    -f build/Api.Dockerfile .
 integration-test-api:
 ifneq ($(skip_pull), true)
