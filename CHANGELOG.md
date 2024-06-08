@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - Fixed bug in deployment step
+- chore(deps): update alpine docker tag to v3.20.0
 
 ## [1.1.0] - 2024-06-07
 ### Added
