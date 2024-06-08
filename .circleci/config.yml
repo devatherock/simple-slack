@@ -34,7 +34,7 @@ orbs:
 parameters:
   go_version:
     type: string
-    default: "1.20"
+    default: "1.22"
   repo_name:
     type: string
     default: "simple-slack"
@@ -75,7 +75,9 @@ jobs:
     steps:
       - checkout
       - run: |
-          make docker-build-<< parameters.image_type >> integration-test-<< parameters.image_type >> skip_pull=true
+          make docker-build-<< parameters.image_type >> \
+            integration-test-<< parameters.image_type >> \
+            go_version=<< pipeline.parameters.go_version >> skip_pull=true
 
   build:
     executor: docker-executor
