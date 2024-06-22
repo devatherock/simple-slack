@@ -5,6 +5,7 @@
 - Fixed bug in deployment step
 - chore(deps): update alpine docker tag to v3.20.0
 - Upgraded go to `1.22`
+- chore(deps): update alpine docker tag to v3.20.1
 
 ## [1.1.0] - 2024-06-07
 ### Added
