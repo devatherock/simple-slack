@@ -6,6 +6,7 @@
 - Upgraded go to `1.22`
 - chore(deps): update alpine docker tag to v3.20.2
 - Upgraded `circleci-templates` to `0.7.0`
+- Upgraded `golang.org/x/crypto` to `0.21.0`
 
 ## [1.1.0] - 2024-06-07
 ### Added

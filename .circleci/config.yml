@@ -65,7 +65,7 @@ jobs:
           keys:
             - v1-pkg-cache-{{ checksum "go.mod" }}
             - v1-pkg-cache
-      - run: make check
+      - run: make check coveralls
 
   fast_integration_test:
     parameters:
