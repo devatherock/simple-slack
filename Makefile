@@ -47,8 +47,7 @@ integration-test-api:
 ifneq ($(skip_pull), true)
 	docker pull devatherock/simple-slack-api:$(docker_tag)
 endif
-	DOCKER_TAG=$(docker_tag) docker-compose -f build/docker-compose.yml up -d
-	sleep 1
+	DOCKER_TAG=$(docker_tag) docker compose -f build/docker-compose.yml up --wait
 	go test -v ./... -tags api
 	docker-compose -f build/docker-compose.yml down
 deploy:
