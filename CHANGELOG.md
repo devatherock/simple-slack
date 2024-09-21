@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Health check to docker compose, to prevent transient build failures
+
 ### Changed
 - Fixed bug in deployment step
 - Upgraded go to `1.22`
