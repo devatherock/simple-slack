@@ -3,10 +3,9 @@
 ## [Unreleased]
 ### Changed
 - Fixed bug in deployment step
-- chore(deps): update alpine docker tag to v3.20.0
 - Upgraded go to `1.22`
-- chore(deps): update alpine docker tag to v3.20.1
 - chore(deps): update alpine docker tag to v3.20.2
+- Upgraded `circleci-templates` to `0.7.0`
 
 ## [1.1.0] - 2024-06-07
 ### Added

@@ -29,7 +29,7 @@ pr_filter: &pr_filter
       ignore: master
 
 orbs:
-  templates: devatherock/circleci-templates@dev:alpha
+  templates: devatherock/circleci-templates@0.7.0
 
 parameters:
   go_version:
