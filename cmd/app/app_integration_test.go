@@ -41,13 +41,13 @@ func TestSendNotificationWithBuildId(test *testing.T) {
 			requestUrl = request.Host + request.URL.Path
 			headers = request.Header
 
-			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"running"}`)
+			fmt.Fprintln(writer, `{"name":"publish","project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"running"}`)
 		} else if requestIndex == 1 {
-			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"success"}`)
+			fmt.Fprintln(writer, `{"name":"publish","project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"success"}`)
 		} else if requestIndex == 4 {
-			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"failed"}`)
+			fmt.Fprintln(writer, `{"name":"publish","project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"failed"}`)
 		} else if requestIndex == 7 {
-			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"failing"}`)
+			fmt.Fprintln(writer, `{"name":"publish","project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"failing"}`)
 		} else { // 2, 5, 8 For the slack send call
 			fmt.Fprintln(writer, `{"success":true}`)
 		}
@@ -116,7 +116,7 @@ func TestSendNotificationWithBuildId(test *testing.T) {
 
 		// Verify slack request
 		helper.VerifySlackRequest(test, capturedRequest, map[string]string{
-			"text":  fmt.Sprintf("%s: <https://app.circleci.com/pipelines/gh/devatherock/email-sender/292|gh/devatherock/email-sender-292>", data.expectedStatus),
+			"text":  fmt.Sprintf("%s: <https://app.circleci.com/pipelines/gh/devatherock/email-sender/292|gh/devatherock/email-sender-292>(publish)", data.expectedStatus),
 			"color": data.expectedColor,
 			"title": "Build completed",
 		})

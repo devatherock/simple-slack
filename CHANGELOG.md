@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- [#78](https://github.com/devatherock/simple-slack/issues/78): Included CircleCI workflow name in message
+
 ### Changed
 - Used machine executor in deployment step
 - Upgraded `flyctl` to `0.2.93`
