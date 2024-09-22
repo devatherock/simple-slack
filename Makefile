@@ -55,4 +55,4 @@ deploy:
         -e FLY_API_TOKEN \
         -v $(CURDIR):/work \
         -w /work \
-        flyio/flyctl:v0.2.23 deploy
+        flyio/flyctl:v0.2.93 deploy

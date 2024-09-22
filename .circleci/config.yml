@@ -153,10 +153,9 @@ jobs:
             devatherock/<< parameters.docker_image >>:$DEV_TAG
 
   deploy:
-    executor: docker-executor
+    executor: machine-executor # Unable to locate fly.toml when using docker executor
     steps:
       - checkout
-      - setup_remote_docker
       - attach_workspace:
           <<: *workspace
       - run:
@@ -166,7 +165,7 @@ jobs:
               -e FLY_API_TOKEN \
               -v $PWD:/work \
               -w /work \
-              flyio/flyctl:v0.2.23 deploy
+              flyio/flyctl:v0.2.93 deploy
 
 workflows:
   version: 2.1
