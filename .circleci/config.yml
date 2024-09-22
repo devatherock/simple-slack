@@ -169,9 +169,9 @@ jobs:
             echo $PWD
             docker run --rm \
               -e FLY_API_TOKEN \
-              -v $PWD:/work \
+              -v /home/circleci/simple-slack:/work \
               -w /work \
-              flyio/flyctl:v0.2.22 deploy
+              flyio/flyctl:v0.2.23 deploy
 
 workflows:
   version: 2.1
