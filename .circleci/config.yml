@@ -153,10 +153,9 @@ jobs:
             devatherock/<< parameters.docker_image >>:$DEV_TAG
 
   deploy:
-    executor: docker-executor
+    executor: machine-executor
     steps:
       - checkout
-      - setup_remote_docker
       - attach_workspace:
           <<: *workspace
       - run:
@@ -169,7 +168,7 @@ jobs:
             echo $PWD
             docker run --rm \
               -e FLY_API_TOKEN \
-              -v /home/circleci/simple-slack:/work \
+              -v $PWD:/work \
               -w /work \
               flyio/flyctl:v0.2.23 deploy
 
