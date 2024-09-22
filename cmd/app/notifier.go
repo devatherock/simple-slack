@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var exitStatuses = []string{"success", "failed", "failing"}
 var httpClient = &http.Client{}
 
 type CircleCiWorkFlow struct {
@@ -96,7 +98,7 @@ func monitor(buildId string, token string, slackRequest slack.SlackRequest) {
 		circleCiResponse.Body.Close()
 
 		buildStatus = circleCiWorkFlow.Status
-		if buildStatus == "success" || buildStatus == "failed" {
+		if slices.Contains(exitStatuses, buildStatus) {
 			if slackRequest.Text == "" {
 				slackRequest.Text = fmt.Sprintf(
 					"%s: <https://app.circleci.com/pipelines/%s/%d|%s-%d>",

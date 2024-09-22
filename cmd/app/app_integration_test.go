@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"testing"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 const baseUrl string = "http://localhost:8082"
 
 var client = &http.Client{}
+var inProgressIndexes = []int{0, 3, 6}
 
 func TestSendNotificationWithBuildId(test *testing.T) {
 	var requestIndex = 0
@@ -35,7 +37,7 @@ func TestSendNotificationWithBuildId(test *testing.T) {
 		capturedRequest, _ = ioutil.ReadAll(request.Body)
 		writer.Header().Set("Content-Type", "application/json")
 
-		if requestIndex == 0 || requestIndex == 3 {
+		if slices.Contains(inProgressIndexes, requestIndex) {
 			requestUrl = request.Host + request.URL.Path
 			headers = request.Header
 
@@ -44,7 +46,9 @@ func TestSendNotificationWithBuildId(test *testing.T) {
 			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"success"}`)
 		} else if requestIndex == 4 {
 			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"failed"}`)
-		} else {
+		} else if requestIndex == 7 {
+			fmt.Fprintln(writer, `{"project_slug":"gh/devatherock/email-sender","pipeline_number":292,"status":"failing"}`)
+		} else { // 2, 5, 8 For the slack send call
 			fmt.Fprintln(writer, `{"success":true}`)
 		}
 
@@ -71,6 +75,10 @@ func TestSendNotificationWithBuildId(test *testing.T) {
 		},
 		{
 			"Failed",
+			"#a1040c",
+		},
+		{
+			"Failing",
 			"#a1040c",
 		},
 	}
