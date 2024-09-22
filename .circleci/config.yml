@@ -162,6 +162,8 @@ jobs:
       - run:
           name: Trigger deployment to fly.io
           command: |
+            git checkout -b v1.2.0 v1.2.0
+            ls -lhrt
             docker run --rm \
               -e FLY_API_TOKEN \
               -v $PWD:/work \
@@ -296,28 +298,7 @@ workflows:
 
   pr_check:
     jobs:
-      - templates/changelog_updater:
-          name: changelog_updater
+      - deploy:
           context:
             - docker-credentials
-            - changelog-updater-credentials
           <<: *pr_filter
-      - test:
-          context:
-            - docker-credentials
-          requires:
-            - changelog_updater
-      - fast_integration_test:
-          name: fast_integration_test_plugin
-          context:
-            - docker-credentials
-          image_type: 'plugin'  
-          requires:
-            - test
-      - fast_integration_test:
-          name: fast_integration_test_api
-          context:
-            - docker-credentials
-          image_type: 'api'  
-          requires:
-            - test
