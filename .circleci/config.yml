@@ -166,6 +166,7 @@ jobs:
             ls -lhrt
             pwd
             cat fly.toml
+            echo $PWD
             docker run --rm \
               -e FLY_API_TOKEN \
               -v $PWD:/work \
