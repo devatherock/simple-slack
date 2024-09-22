@@ -164,11 +164,13 @@ jobs:
           command: |
             git checkout -b v1.2.0 v1.2.0
             ls -lhrt
+            pwd
+            cat fly.toml
             docker run --rm \
               -e FLY_API_TOKEN \
               -v $PWD:/work \
               -w /work \
-              flyio/flyctl:v0.2.23 deploy
+              flyio/flyctl:v0.2.93 deploy
 
 workflows:
   version: 2.1
