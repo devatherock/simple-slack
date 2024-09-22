@@ -171,7 +171,7 @@ jobs:
               -e FLY_API_TOKEN \
               -v $PWD:/work \
               -w /work \
-              flyio/flyctl:v0.2.93 deploy --config fly.toml
+              flyio/flyctl:v0.2.22 deploy
 
 workflows:
   version: 2.1
