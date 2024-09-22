@@ -23,6 +23,7 @@ var exitStatuses = []string{"success", "failed", "failing"}
 var httpClient = &http.Client{}
 
 type CircleCiWorkFlow struct {
+	Name           string `json:",omitempty"`
 	Project        string `json:"project_slug,omitempty"`
 	Status         string `json:",omitempty"`
 	PipelineNumber int    `json:"pipeline_number,omitempty"`
@@ -101,12 +102,13 @@ func monitor(buildId string, token string, slackRequest slack.SlackRequest) {
 		if slices.Contains(exitStatuses, buildStatus) {
 			if slackRequest.Text == "" {
 				slackRequest.Text = fmt.Sprintf(
-					"%s: <https://app.circleci.com/pipelines/%s/%d|%s-%d>",
+					"%s: <https://app.circleci.com/pipelines/%s/%d|%s-%d>(%s)",
 					strings.ToUpper(buildStatus[:1])+buildStatus[1:],
 					circleCiWorkFlow.Project,
 					circleCiWorkFlow.PipelineNumber,
 					circleCiWorkFlow.Project,
 					circleCiWorkFlow.PipelineNumber,
+					circleCiWorkFlow.Name,
 				)
 			}
 
