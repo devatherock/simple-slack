@@ -1,6 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+- Used machine executor in deployment step
+- Upgraded `flyctl` to `0.2.93`
+
+## [1.2.0] - 2024-09-22
 ### Added
 - Health check to docker compose, to prevent transient build failures
 
