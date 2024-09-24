@@ -161,11 +161,12 @@ jobs:
       - run:
           name: Trigger deployment to fly.io
           command: |
+            TAG=${CIRCLE_TAG#v}
             docker run --rm \
               -e FLY_API_TOKEN \
               -v $PWD:/work \
               -w /work \
-              flyio/flyctl:v0.2.93 deploy
+              flyio/flyctl:v0.2.93 deploy --image devatherock/simple-slack-api:$TAG
 
 workflows:
   version: 2.1

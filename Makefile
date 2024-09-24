@@ -55,4 +55,4 @@ deploy:
         -e FLY_API_TOKEN \
         -v $(CURDIR):/work \
         -w /work \
-        flyio/flyctl:v0.2.93 deploy
+        flyio/flyctl:v0.2.93 deploy --image devatherock/simple-slack-api:$(docker_tag)

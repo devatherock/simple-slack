@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+- Used image from dockerhub for deployment
+
+## [1.3.0] - 2024-09-22
 ### Added
 - [#78](https://github.com/devatherock/simple-slack/issues/78): Included CircleCI workflow name in message
 

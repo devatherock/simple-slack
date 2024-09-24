@@ -7,7 +7,7 @@ app = 'simple-slack'
 primary_region = 'ord'
 
 [build]
-  dockerfile = 'fly/Dockerfile'
+  image = 'devatherock/simple-slack-api:latest'
 
 [http_service]
   internal_port = 8080
