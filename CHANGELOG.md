@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - Used image from dockerhub for deployment
+- fix(deps): update module github.com/urfave/cli/v2 to v2.27.5
 
 ## [1.3.0] - 2024-09-22
 ### Added
