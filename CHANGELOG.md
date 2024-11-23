@@ -4,6 +4,7 @@
 ### Changed
 - Used image from dockerhub for deployment
 - fix(deps): update module github.com/urfave/cli/v2 to v2.27.5
+- fix(deps): update module github.com/stretchr/testify to v1.10.0
 
 ## [1.3.0] - 2024-09-22
 ### Added
