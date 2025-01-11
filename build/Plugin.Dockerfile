@@ -7,7 +7,7 @@ WORKDIR /home/workspace
 RUN go build -o bin/ ./cmd/plugin
 
 
-FROM alpine:3.21.0
+FROM alpine:3.21.2
 
 LABEL maintainer="devatherock@gmail.com"
 
