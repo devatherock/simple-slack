@@ -8,6 +8,7 @@
 - chore(deps): update alpine docker tag to v3.21.0
 - chore(deps): bump golang.org/x/crypto from 0.21.0 to 0.31.0
 - chore(deps): update alpine docker tag to v3.21.2
+- chore(deps): update alpine docker tag to v3.21.3
 
 ## [1.3.0] - 2024-09-22
 ### Added
