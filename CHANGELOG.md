@@ -11,6 +11,7 @@
 - chore(deps): update alpine docker tag to v3.21.3
 - fix(deps): update module github.com/urfave/cli/v2 to v2.27.6
 - chore(deps): update alpine docker tag to v3.22.0
+- fix(deps): update module github.com/urfave/cli/v2 to v3
 
 ## [1.3.0] - 2024-09-22
 ### Added
