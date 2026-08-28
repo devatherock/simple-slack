@@ -6,8 +6,9 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/devatherock/vela-template-tester v1.0.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.10.0
-	github.com/urfave/cli/v2 v2.27.6
+	github.com/stretchr/testify v1.11.1
+	github.com/urfave/cli/v2 v2.25.6
+	github.com/urfave/cli/v3 v3.11.0
 )
 
 require (
