@@ -7,7 +7,7 @@ WORKDIR /home/workspace
 RUN go build -o bin/ ./cmd/app
 
 
-FROM alpine:3.22.0
+FROM alpine:3.24.1
 
 COPY --from=build /home/workspace/bin/app /bin/app
 
