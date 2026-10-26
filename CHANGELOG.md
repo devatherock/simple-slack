@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 ### Changed
+- fix(deps): update module github.com/sirupsen/logrus to v1.10.2
+
+## [1.4.0] - 2026-09-14
+### Changed
 - Used image from dockerhub for deployment
 - fix(deps): update module github.com/urfave/cli/v2 to v2.27.5
 - fix(deps): update module github.com/stretchr/testify to v1.10.0
