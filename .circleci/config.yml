@@ -34,7 +34,7 @@ orbs:
 parameters:
   go_version:
     type: string
-    default: "1.23"
+    default: "1.25"
   repo_name:
     type: string
     default: "simple-slack"

@@ -1,5 +1,5 @@
 ARG GO_VERSION=1.22
-FROM golang:${GO_VERSION}-alpine3.20 AS build
+FROM golang:${GO_VERSION}-alpine3.21 AS build
 
 COPY . /home/workspace
 WORKDIR /home/workspace
