@@ -4,6 +4,7 @@
 ### Changed
 - fix(deps): update module github.com/sirupsen/logrus to v1.10.2
 - chore(deps): update module golang.org/x/crypto to v0.52.0 [security]
+- chore(deps): update alpine docker tag to v3.24.4
 
 ## [1.4.0] - 2026-09-14
 ### Changed
